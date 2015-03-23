@@ -1,7 +1,7 @@
 {
   "name": "DaVinciNode",
   "version": "0.0.1",
-  "main": "server.js",
+  "main": "app.js",
   "dependencies": {
     "socket.io": "0.9.6",
     "connect": "1.9.2"
