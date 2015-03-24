@@ -8,8 +8,7 @@ $(document).ready(function(){
     
     var params = {
         Bucket: name,
-        ACL: 'public-read',
-        
+        ACL: 'public-read'
     };
 
     s3.createBucket(params, function(err, data) {
