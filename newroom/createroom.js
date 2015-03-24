@@ -1,10 +1,26 @@
+//var AWS = require('aws-sdk');
 var roomname;
+var roomnamejoin;
 var instructorname;
 var emails;
 var upload;
+var emaillist;
 var attendeename;
-var submit = document.getElementById("createsubmit");
+var create = document.getElementById("createsubmit");
+var join = document.getElementById("joinsubmit");
 
-submit.onClick = function(){
-	alert("hello");
+create.onclick = function(){
+	roomname = document.getElementById("roomnameinput");
+	instructorname = document.getElementById("instructornameinput");
+	emails = document.getElementById("emailsinput");
+	upload = document.getElementById("presentationfile");
 }
+
+join.onclick = function(){
+	attendeename = document.getElementById("attendeenameinput");
+	roomnamejoin = document.getElementById("roomnameattendeeinput");
+}
+
+//emaillist = emails.split(",");
+
+

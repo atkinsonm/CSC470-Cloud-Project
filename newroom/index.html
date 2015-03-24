@@ -1,6 +1,7 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 <html>
 	<head>
+
 		<style type="text/css">
 			body {
 			  background-color: #d0e4fe;
@@ -16,18 +17,17 @@
 		</style>
 		
 		<title>The Node Less Traveled</title>
-
 	</head>	
 	<body>
 			<form id="roomcreateform">
 				<p>Create A Room!</p>
 				<p>Enter your name: </p>
-				<input type = "text" id = "instructorname" required>
+				<input type = "text" id = "instructornameinput" required>
 				<p>Enter your room name:</p> 
-				<input type = "text" id = "roomname" required>
+				<input type = "text" id = "roomnameinput" required>
 				<p>Would you like to send emails to your <br>
-				attendees telling them the room name?</p>
-				<textarea type = "email" id="emails" ROWS=3 COLS=30 ></textarea>
+				attendees telling them the room name?<br> Seperate them by commas:</p>
+				<textarea type = "email" id="emailsinput" ROWS=3 COLS=30 ></textarea>
 				<p>Please upload your presentation:</p>
 				<input type = "file" id = "presentationfile"><br><br>
 				<input type = "submit" id = "createsubmit" value = "Submit">
@@ -35,15 +35,16 @@
 			<form id="roomjoinform">
 				<p>Join A Room!</p>
 				<p>Enter your name: </p>
-				<input type = "text" id = "attendeename" required>
+				<input type = "text" id = "attendeenameinput" required>
 				<br>
 				<p>Enter your room name: </p>
-				<input type = "text" id = "roomname" required>
+				<input type = "text" id = "roomnameattendeeinput" required>
 				<br><br>
 				<input type = "submit" id = "joinsubmit" value = "Submit">
 				<br>
 			</form>
+			<script src="jquery-1.11.2.min.js"></script>
+			<script type="text/javascript" src = "createroom.js"></script>
 	</body>	
-	<script type="text/javascript" src = "createroom.js">
-	</script>
+	
 </html>
