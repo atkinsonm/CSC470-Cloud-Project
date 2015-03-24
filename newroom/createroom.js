@@ -1,9 +1,10 @@
-var AWS = require('aws-sdk');
+//var AWS = require('aws-sdk');
 var roomname;
 var roomnamejoin;
 var instructorname;
 var emails;
 var upload;
+var emaillist;
 var attendeename;
 var create = document.getElementById("createsubmit");
 var join = document.getElementById("joinsubmit");
@@ -20,6 +21,6 @@ join.onclick = function(){
 	roomnamejoin = document.getElementById("roomnameattendeeinput");
 }
 
-var emaillist = emails.split(",");
+//emaillist = emails.split(",");
 
 
