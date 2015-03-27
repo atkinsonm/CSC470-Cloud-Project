@@ -43,7 +43,7 @@ exports.addRoomToDB = function(roomName, roomID) {
 }
 
 // Generates a random room ID string
-exports.randID = function()
+exports.randID = function(sendTo, instructor)
 {
     var text = "";
     var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -52,4 +52,38 @@ exports.randID = function()
         text += possible.charAt(Math.floor(Math.random() * possible.length));
 
     return text;
+}
+
+exports.sendEmail = function() {
+    var charset = "utf-8";
+
+    var params = {
+      Destination: { /* required */
+        ToAddresses: sendTo
+      },
+      Message: { /* required */
+        Body: { /* required */
+          Html: {
+            Data: '5', /* required */
+            Charset: charset
+          },
+          Text: {
+            Data: instructor + ' invited you to a conference. Click this link to access the conference', /* required */
+            Charset: charset
+          }
+        },
+        Subject: { /* required */
+          Data: 'You\'ve been invited to join a conference!', /* required */
+          Charset: charset
+        }
+      },
+      Source: 'melusom2@tcnj.edu'//, /* required */
+      //ReplyToAddresses: '',
+      //ReturnPath: ''
+    };
+
+    ses.sendEmail(params, function(err, data) {
+      if (err) console.log(err, err.stack); // an error occurred
+      else     console.log(data);           // successful response
+    });   
 }
