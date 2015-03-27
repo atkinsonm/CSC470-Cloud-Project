@@ -31,7 +31,9 @@ socketListener.sockets.on("connection", function(socket) {
 		// Generate a random ID
 		var roomID = aws.randID();
 
-		aws.createBucket(roomName, roomID);
+		console.log(roomID);
+
+		aws.createBucket(roomID);
 
 	});
 
