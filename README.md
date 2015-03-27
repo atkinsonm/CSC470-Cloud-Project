@@ -8,3 +8,4 @@ Final Project for CSC 470 - Cloud Computing
   - Generate unique room ID (incomplete, still must check for unique ID)
   - Create bucket when given room ID (complete)
   - Adding data about created room to DynamoDB (complete)
+- Send email upon room creation to instructor-specified email list (complete, but requires testing)
