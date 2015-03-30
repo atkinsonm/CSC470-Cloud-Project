@@ -58,33 +58,6 @@ exports.testRoomID = function(roomID, callback) {
 
 }
 
-exports.getUniqueRoomID = function() {
-
-    var roomID = this.randID();
-
-    var params = {
-        Key: {
-            RoomID: { S: roomID }
-        },
-        TableName: "Room"
-    };
-
-    console.log("getting item");
-
-    dynamodb.getItem(params, function(err, data){
-        if (err) console.log(err, err.stack);
-        else {
-            console.log("Finished dynamodb call for " + roomID);
-            if(typeof data.Item === "undefined") {
-                console.log("Returning unique ID");
-                return roomID;
-            }
-            else
-                this.getUniqueRoomID();
-        }
-    });
-}
-
 exports.addRoomToDB = function(roomName, roomID) {
 
     var params = {
