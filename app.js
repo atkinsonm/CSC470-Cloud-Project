@@ -32,6 +32,8 @@ socketListener.sockets.on("connection", function(socket) {
 		var roomName = data.roomName;
 		// Generate a random ID
 		var roomID = aws.randID();
+		var instructor = data.instructorName;
+        var emails = data.emails;
 
 		function testIDCallback(result) {
 			if (result === false) {
@@ -44,6 +46,7 @@ socketListener.sockets.on("connection", function(socket) {
 				console.log("Creating bucket with roomID " + roomID);
 				aws.createBucket(roomID);
 				aws.addRoomToDB(roomName, roomID);
+				aws.sendEmail(emails, instructor);
 			}
 		}
 
