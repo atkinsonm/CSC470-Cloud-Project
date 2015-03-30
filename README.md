@@ -5,7 +5,7 @@ Final Project for CSC 470 - Cloud Computing
 - Basic chat room implemented in server.js - this starting point will later be adapted as a question feed
 - Creating new room implementation - implemented in app.js
   - Landing page (complete)
-  - Generate unique room ID (incomplete, still must check for unique ID)
+  - Generate unique room ID (icomplete)
   - Create bucket when given room ID (complete)
   - Adding data about created room to DynamoDB (complete)
 - Send email upon room creation to instructor-specified email list (complete, but requires testing)
