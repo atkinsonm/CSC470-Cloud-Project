@@ -24,6 +24,37 @@ exports.createBucket = function(roomID) {
     return name;
 }
 
+/*
+ * Queries DynamoDB to see whether the room ID given in the parameter has been used already
+ * If the room ID is unique, then a true value is passed into the parameter callback
+ * If the room ID is not unique, then a false value is passed into the parameter callback
+ */
+exports.testRoomID = function(roomID, callback) {
+
+    var result;
+
+    var params = {
+        Key: {
+            RoomID: { S: roomID }
+        },
+        TableName: "Room"
+    };
+
+    dynamodb.getItem(params, function(err, data){
+        if (err){ 
+            console.log(err, err.stack);
+            callback(false);
+        }
+        else {
+            callback(typeof data.Item === "undefined");
+        }
+    });
+
+    console.log("Got here");
+    return result;
+
+}
+
 exports.addRoomToDB = function(roomName, roomID) {
 
     var params = {

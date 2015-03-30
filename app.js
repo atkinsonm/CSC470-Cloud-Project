@@ -5,7 +5,7 @@ var connect = require("connect"),
 
 var app = connect()
 	.use(connect.bodyParser()) // Allows server to read variables in a submitted form
-	.use(connect.static("newroom")) // Fetches content from the newroom directory and serves it to the requester
+	.use(connect.static("public")) // Fetches content from the newroom directory and serves it to the requester
 	.use(function (req, res) { 
 		// If the public folder cannot satisfy the request, this function runs
 		res.end("Invalid request: page not found");
@@ -27,6 +27,7 @@ socketListener.sockets.on("connection", function(socket) {
 		var roomName = data.roomName;
 		// Generate a random ID
 		var roomID = aws.randID();
+<<<<<<< HEAD
 
 		console.log(roomID);
 
@@ -42,6 +43,30 @@ socketListener.sockets.on("connection", function(socket) {
             aws.sendEmail(emails, instructor); 
         } else { console.log("No invitees."); }
         
+=======
+		var instructor = data.instructorName;
+        var emails = data.emails;
+
+		function testIDCallback(result) {
+			if (result === false) {
+				// The ID is not unique - generate another random ID then check if unique
+				roomID = aws.randID();
+				aws.testRoomID(roomID, testCallback);
+			}
+			else {
+				// The ID is unique, create the room's bucket and entry in database
+				console.log("Creating bucket with roomID " + roomID);
+				aws.createBucket(roomID);
+				aws.addRoomToDB(roomName, roomID);
+				aws.sendEmail(emails, instructor);
+			}
+		}
+
+		// Calls the test and will fire the testIDCallback when finished, resulting in bucket and DB entry creation
+		aws.testRoomID(roomID, testIDCallback);
+>>>>>>> 4020229cbcc454223afa7e297ee4ef6aedae838b
 	});
 
 });
+
+
