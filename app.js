@@ -1,12 +1,10 @@
 var connect = require("connect"),
 	io = require("socket.io"),
-	aws = require("./awsClient.js"),
-	async = require("async"),
-	wait = require("wait.for");
+	aws = require("./awsClient.js");
 
 var app = connect()
 	.use(connect.bodyParser()) // Allows server to read variables in a submitted form
-	.use(connect.static("newroom")) // Fetches content from the newroom directory and serves it to the requester
+	.use(connect.static("public")) // Fetches content from the newroom directory and serves it to the requester
 	.use(function (req, res) { 
 		// If the public folder cannot satisfy the request, this function runs
 		res.end("Invalid request: page not found");

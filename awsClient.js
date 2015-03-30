@@ -1,5 +1,4 @@
-var AWS = require('aws-sdk'),
-    wait = require("wait.for");
+var AWS = require('aws-sdk');
 
 // Set the region for the AWS services - required for DynamoDB
 AWS.config.update({region: "us-east-1"});
