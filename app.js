@@ -33,7 +33,11 @@ socketListener.sockets.on("connection", function(socket) {
 
 		console.log(roomID);
 
-		aws.createBucket(roomID);
+		var bucket = aws.createBucket(roomID);
+        var instructor = data.instructorName;
+        var emails = data.emails;
+        aws.sendEmail(emails, instructor);
+        
 
 	});
 

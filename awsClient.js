@@ -23,6 +23,7 @@ exports.createBucket = function(roomID) {
         if (err) console.log(err, err.stack); // an error occurred
         else     console.log(data);           // successful response
     });
+    return name;
 }
 
 exports.addRoomToDB = function(roomName, roomID) {
@@ -54,7 +55,7 @@ exports.randID = function(sendTo, instructor)
     return text;
 }
 
-exports.sendEmail = function() {
+exports.sendEmail = function(sendTo, instructor) {
     var charset = "utf-8";
 
     var params = {
@@ -64,7 +65,7 @@ exports.sendEmail = function() {
       Message: { /* required */
         Body: { /* required */
           Html: {
-            Data: '5', /* required */
+            Data: instructor + ' invited you to a conference. Click this link to access the conference', /* required */
             Charset: charset
           },
           Text: {
