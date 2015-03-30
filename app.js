@@ -1,6 +1,8 @@
 var connect = require("connect"),
 	io = require("socket.io"),
-	aws = require("./awsClient.js");
+	aws = require("./awsClient.js"),
+	async = require("async"),
+	wait = require("wait.for");
 
 var app = connect()
 	.use(connect.bodyParser()) // Allows server to read variables in a submitted form
@@ -31,8 +33,24 @@ socketListener.sockets.on("connection", function(socket) {
 		// Generate a random ID
 		var roomID = aws.randID();
 
-		aws.createBucket(roomName, roomID);
+		function testIDCallback(result) {
+			if (result === false) {
+				// The ID is not unique - generate another random ID then check if unique
+				roomID = aws.randID();
+				aws.testRoomID(roomID, testCallback);
+			}
+			else {
+				// The ID is unique, create the room's bucket and entry in database
+				console.log("Creating bucket with roomID " + roomID);
+				aws.createBucket(roomID);
+				aws.addRoomToDB(roomName, roomID);
+			}
+		}
 
+		// Calls the test and will fire the testIDCallback when finished, resulting in bucket and DB entry creation
+		aws.testRoomID(roomID, testIDCallback);
 	});
 
 });
+
+
