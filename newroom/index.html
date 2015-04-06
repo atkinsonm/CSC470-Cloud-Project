@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+	<head>
+
+		<style type="text/css">
+			body {
+			  background-color: #d0e4fe;
+			}
+			p{
+				font-family: "Times New Roman";
+    			font-size: 20px;
+			}
+			form{
+				float: left;
+				margin: 30px;
+			}
+		</style>
+		
+		<title>The Node Less Traveled</title>
+
+		
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>			
+		<script type="text/javascript" src="createroom.js"></script>
+	</head>	
+	<body>
+			<form id="roomcreateform">
+				<p>Create A Room!</p>
+				<p>Enter your name: </p>
+				<input type = "text" id = "instructornameinput" required>
+				<p>Enter your room name:</p> 
+				<input type = "text" id = "roomnameinput" required>
+				<p>Would you like to send emails to your <br>
+				attendees telling them the room name?<br> Seperate them by commas:</p>
+				<textarea type = "email" id="emailsinput" ROWS=3 COLS=30 ></textarea>
+				<p>Please upload your presentation:</p>
+				<input type = "file" id = "presentationfile"><br><br>
+				<input type = "submit" id = "createsubmit" value = "Submit">
+			</form>
+			<form id="roomjoinform">
+				<p>Join A Room!</p>
+				<p>Enter your name: </p>
+				<input type = "text" id = "attendeenameinput" required>
+				<br>
+				<p>Enter your room name: </p>
+				<input type = "text" id = "roomnameattendeeinput" required>
+				<br><br>
+				<input type = "submit" id = "joinsubmit" value = "Submit">
+				<br>
+			</form>
+	</body>	
+</html>

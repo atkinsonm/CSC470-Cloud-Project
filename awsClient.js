@@ -8,8 +8,6 @@ var s3 = new AWS.S3();
 var dynamodb = new AWS.DynamoDB();
 var ses = new AWS.SES();
 
-var charset = "utf-8";
-
 // Creates a new bucket for a room
 exports.createBucket = function(roomID, callback) {
     var name = 'tcnj-csc470-nodejs-' + roomID;
@@ -94,7 +92,7 @@ exports.sendEmail = function(sendTo, instructor, callback) {
 
     var params = {
       Destination: { /* required */
-        ToAddresses: sendTo
+        BccAddresses: sendTo
       },
       Message: { /* required */
         Body: { /* required */

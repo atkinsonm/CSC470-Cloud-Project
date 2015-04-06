@@ -1,6 +1,7 @@
 var connect = require("connect"),
 	io = require("socket.io"),
 	aws = require("./awsClient.js");
+    utils = require("./utils.js");
 
 var app = connect()
 	.use(connect.bodyParser()) // Allows server to read variables in a submitted form
@@ -27,14 +28,25 @@ socketListener.sockets.on("connection", function(socket) {
 
 		// These console.log statements are for debugging purposes - they may be deleted later
 		console.log("Creating room with instructor name " + data.instructorName + " room name " + data.roomName);
-		console.log("Invitees:");
-		for (var i = 0; i < data.emails.length; i++) {
-			console.log("\t" + data.emails[i]);
-		}
 
 		var roomName = data.roomName;
 		// Generate a random ID
 		var roomID = aws.randID();
+
+		console.log(roomID);
+
+		var bucket = aws.createBucket(roomID);
+        
+        var instructor = data.instructorName;
+        var emails = utils.validateEmailAddr(data.emails);
+        if (emails.length >= 1 && emails[0] != '') { 
+            console.log("Invitees:");
+            for (var i = 0; i < emails.length; i++) {
+                console.log("\t" + emails[i]);
+            }
+            aws.sendEmail(emails, instructor); 
+        } else { console.log("No invitees."); }
+        
 		var instructor = data.instructorName;
         var emails = data.emails;
 
