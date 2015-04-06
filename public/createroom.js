@@ -53,7 +53,13 @@ $(document).ready(function() {
 			}
 
 			// reading the file.
-			FReader.readAsDataURL(file);	
+			if (file != undefined) {
+				FReader.readAsDataURL(file);	
+			}
+			else {
+				// Emit a socket event to the server and send the input data
+				socket.emit('create-room', inputData);	
+			}
 
 			// Unhide status message
 			$("#creatingbucket").removeClass("hide");

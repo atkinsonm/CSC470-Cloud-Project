@@ -127,8 +127,9 @@ exports.sendEmail = function(sendTo, instructor, callback) {
 
 
 // Save a temporarily file.
-exports.saveTemporaryFile = function(file)
+exports.saveTemporaryFile = function(roomID, file)
 {
+  console.log('Legal');
   
   // if tmp directory is not already created, then create it.
   fs.exists(__dirname + "/tmp", function (exists) {
@@ -144,8 +145,7 @@ exports.saveTemporaryFile = function(file)
     } 
   });
 
-  var currentTimeStamp = Date.now();
-  var fileName = file['name'] + '.' + file['extension'];
+  var fileName = roomID + '.' + file['name'] + '.' + file['extension'];
   var fileData = this.decodeDataURL(file['data']).data;
 
   // save the temp file.
@@ -171,13 +171,23 @@ exports.decodeDataURL = function(dataString) {
 }
 
 
-exports.uploadObjectToBucket = function(bucket, key, objectPath)
+exports.uploadObjectToBucket = function(roomID, key, objectPath)
 {
-    var text = "";
-    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  var name = 'tcnj-csc470-nodejs-' + roomID;
 
-    for( var i=0; i < 10; i++ )
-        text += possible.charAt(Math.floor(Math.random() * possible.length));
+    var params = {
+        Bucket: name,
+        Key: 'public-read'
+    };
 
-    return text;
+    s3.createBucket(params, function(err, data) {
+      if (err) {
+        console.log("Bucket creation failed");
+        console.log(err, err.stack); // an error occurred
+      }
+      else     console.log(data); // successful response
+
+      callback(err, data);
+    });
+    return name;   
 }

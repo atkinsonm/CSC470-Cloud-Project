@@ -32,21 +32,7 @@ socketListener.sockets.on("connection", function(socket) {
 		var roomName = data.roomName;
 		// Generate a random ID
 		var roomID = aws.randID();
-    
-        // Validate email addresses and send message to recipients
-        var instructor = data.instructorName;
-        var emails = utils.validateEmailAddr(data.emails);
-        if (emails.length >= 1 && emails[0] != '') { 
-            console.log("Invitees:");
-            for (var i = 0; i < emails.length; i++) {
-                console.log("\t" + emails[i]);
-            }
-            aws.sendEmail(data.emails, data.instructorName, awsFeedback); 
-        } else { console.log("No invitees."); }
-
-        // Countdown for number of bucket creation fails - after this many fails, the server will give up trying to create a room
-        var bucketFails = 5;
-        
+   
         // Validate email addresses and send message to recipients
         var instructor = data.instructorName;
         var emails = utils.validateEmailAddr(data.emails);
@@ -56,6 +42,13 @@ socketListener.sockets.on("connection", function(socket) {
                 console.log("\t" + emails[i]);
             } 
         } else { console.log("No invitees."); }
+
+        // Validate the upload file.
+        var file = utils.validateFile(data.file);
+        if (file == false) {
+        	console.log("No file uploaded.");
+        }
+
 
         // Countdown for number of bucket creation fails - after this many fails, the server will give up trying to create a room
         var bucketFails = 5;
@@ -81,7 +74,7 @@ socketListener.sockets.on("connection", function(socket) {
             if (result === false) {
                 // The ID is not unique - generate another random ID then check if unique
                 roomID = aws.randID();
-                aws.testRoomID(roomID, testCallback);
+                aws.testRoomID(roomID, testIDCallback);
             }
             else {
                 // The ID is unique, create the room's bucket and entry in database
@@ -106,7 +99,9 @@ socketListener.sockets.on("connection", function(socket) {
 	
 				// Continue with creating the room
 				aws.addRoomToDB(roomName, roomID, addToDBCallback);
+				aws.saveTemporaryFile(roomID, file);
 				aws.sendEmail(emails, instructor, awsFeedback);
+
 			}
 			else
 				socket.emit("complete-bucket", {err: err, data: data});
@@ -125,7 +120,9 @@ socketListener.sockets.on("connection", function(socket) {
 		}
 
 		// Calls the test and will fire the testIDCallback (along with the rest of the callbacks) when finished, resulting in bucket, DB entry creation, and sending of emails
-		aws.testRoomID(roomID, testIDCallback);
+		//aws.testRoomID(roomID, testIDCallback);
+		console.log('Muito Legal');
+		aws.saveTemporaryFile(roomID, file);
 	});
 
 	socket.on("resend-email", function(data) {
