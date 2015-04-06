@@ -32,10 +32,20 @@ socketListener.sockets.on("connection", function(socket) {
 		var roomName = data.roomName;
 		// Generate a random ID
 		var roomID = aws.randID();
+    
+        // Validate email addresses and send message to recipients
+        var instructor = data.instructorName;
+        var emails = utils.validateEmailAddr(data.emails);
+        if (emails.length >= 1 && emails[0] != '') { 
+            console.log("Invitees:");
+            for (var i = 0; i < emails.length; i++) {
+                console.log("\t" + emails[i]);
+            }
+            aws.sendEmail(data.emails, data.instructorName, awsFeedback); 
+        } else { console.log("No invitees."); }
 
-		console.log(roomID);
-
-		var bucket = aws.createBucket(roomID);
+        // Countdown for number of bucket creation fails - after this many fails, the server will give up trying to create a room
+        var bucketFails = 5;
         
         // Validate email addresses and send message to recipients
         var instructor = data.instructorName;
@@ -54,6 +64,19 @@ socketListener.sockets.on("connection", function(socket) {
         var dynamoFails = 5;
 
         // This function will be provided a boolean of whether or not a unique ID has been generated
+		function testIDCallback(result) {
+			if (result === false) {
+				// The ID is not unique - generate another random ID then check if unique
+				roomID = aws.randID();
+				aws.testRoomID(roomID, testCallback);
+			}
+			else {
+				// The ID is unique, create the room's bucket and entry in database
+				console.log("Creating room with ID " + roomID);
+				aws.createBucket(roomID, createBucketCallback);
+			}
+		}
+
         function testIDCallback(result) {
             if (result === false) {
                 // The ID is not unique - generate another random ID then check if unique
