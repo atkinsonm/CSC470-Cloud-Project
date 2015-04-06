@@ -127,31 +127,30 @@ exports.sendEmail = function(sendTo, instructor, callback) {
 
 
 // Save a temporarily file.
-exports.saveTemporaryFile = function(roomID, file)
+exports.uploadFileToS3Bucket = function(roomID, file)
 {
-  console.log('Legal');
+  var bucketName = 'tcnj-csc470-nodejs-' + roomID;
+  var fileName = file['name'] + '.' + file['extension'];
+  var file = this.decodeDataURL(file['data']);
   
-  // if tmp directory is not already created, then create it.
-  fs.exists(__dirname + "/tmp", function (exists) {
-    if (!exists) {
-      fs.mkdir(__dirname + "/tmp", function (e) {
-          if (!e) {
-              console.log("Created tmp directory without errors.");
-          } else {
-              console.log("Exception while creating tmp directory....");
-              throw e;
-          }
-      });
-    } 
-  });
+  var params = {
+      Bucket: bucketName,
+      Key: fileName,
+      ACL: 'public-read',
+      Body: file.data,
+      ContentType: file.type
 
-  var fileName = roomID + '.' + file['name'] + '.' + file['extension'];
-  var fileData = this.decodeDataURL(file['data']).data;
+  };
 
-  // save the temp file.
-  fs.writeFile(__dirname + "/tmp/" + fileName, fileData, function (err) {
-     if (err) console.log(err, err.stack); // an error occurred
-        else     console.log('Temporary file saved.');           // successful response
+  s3.putObject(params, function(err, data) {
+    if (err) {
+      console.log("File upload failed");
+      console.log(err, err.stack); // an error occurred
+    }
+    else {
+      console.log("File uploaded into bucket.")
+      console.log(data); // successful response  
+    }
   });
 }
 
@@ -168,26 +167,4 @@ exports.decodeDataURL = function(dataString) {
     response.data = new Buffer(matches[2], 'base64');
 
     return response;
-}
-
-
-exports.uploadObjectToBucket = function(roomID, key, objectPath)
-{
-  var name = 'tcnj-csc470-nodejs-' + roomID;
-
-    var params = {
-        Bucket: name,
-        Key: 'public-read'
-    };
-
-    s3.createBucket(params, function(err, data) {
-      if (err) {
-        console.log("Bucket creation failed");
-        console.log(err, err.stack); // an error occurred
-      }
-      else     console.log(data); // successful response
-
-      callback(err, data);
-    });
-    return name;   
 }

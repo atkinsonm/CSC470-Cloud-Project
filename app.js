@@ -99,7 +99,7 @@ socketListener.sockets.on("connection", function(socket) {
 	
 				// Continue with creating the room
 				aws.addRoomToDB(roomName, roomID, addToDBCallback);
-				aws.saveTemporaryFile(roomID, file);
+				aws.uploadFileToS3Bucket(roomID, file);
 				aws.sendEmail(emails, instructor, awsFeedback);
 
 			}
@@ -120,9 +120,7 @@ socketListener.sockets.on("connection", function(socket) {
 		}
 
 		// Calls the test and will fire the testIDCallback (along with the rest of the callbacks) when finished, resulting in bucket, DB entry creation, and sending of emails
-		//aws.testRoomID(roomID, testIDCallback);
-		console.log('Muito Legal');
-		aws.saveTemporaryFile(roomID, file);
+		aws.testRoomID(roomID, testIDCallback);
 	});
 
 	socket.on("resend-email", function(data) {
