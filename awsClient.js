@@ -11,7 +11,7 @@ var ses = new AWS.SES();
 var charset = "utf-8";
 
 // Creates a new bucket for a room
-exports.createBucket = function(roomID) {
+exports.createBucket = function(roomID, callback) {
     var name = 'tcnj-csc470-nodejs-' + roomID;
 
     var params = {
@@ -20,8 +20,13 @@ exports.createBucket = function(roomID) {
     };
 
     s3.createBucket(params, function(err, data) {
-        if (err) console.log(err, err.stack); // an error occurred
-        else     console.log(data);           // successful response
+      if (err) {
+        console.log("Bucket creation failed");
+        console.log(err, err.stack); // an error occurred
+      }
+      else     console.log(data); // successful response
+
+      callback(err, data);
     });
     return name;
 }
@@ -52,12 +57,9 @@ exports.testRoomID = function(roomID, callback) {
         }
     });
 
-    console.log("Got here");
-    return result;
-
 }
 
-exports.addRoomToDB = function(roomName, roomID) {
+exports.addRoomToDB = function(roomName, roomID, callback) {
 
     var params = {
         Item: {
@@ -68,8 +70,9 @@ exports.addRoomToDB = function(roomName, roomID) {
     };
 
     dynamodb.putItem(params, function(err, data) {
-        if (err) console.log(err, err.stack); // an error occurred
-        else     console.log(data);           // successful response
+      if (err) console.log(err, err.stack); // an error occurred
+      else     console.log(data);           // successful response
+      callback(err, data);
     });
 
 }
@@ -86,7 +89,7 @@ exports.randID = function(sendTo, instructor)
     return text;
 }
 
-exports.sendEmail = function(sendTo, instructor) {
+exports.sendEmail = function(sendTo, instructor, callback) {
     var charset = "utf-8";
 
     var params = {
@@ -109,7 +112,7 @@ exports.sendEmail = function(sendTo, instructor) {
           Charset: charset
         }
       },
-      Source: 'melusom2@tcnj.edu'//, /* required */
+      Source: 'gottlob1@tcnj.edu'//, /* required */
       //ReplyToAddresses: '',
       //ReturnPath: ''
     };
@@ -117,5 +120,7 @@ exports.sendEmail = function(sendTo, instructor) {
     ses.sendEmail(params, function(err, data) {
       if (err) console.log(err, err.stack); // an error occurred
       else     console.log(data);           // successful response
+      
+      callback(err, data, "complete-emails");
     });   
 }
