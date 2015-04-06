@@ -18,6 +18,11 @@ var socketListener = io.listen(app);
 // All event listeners are to be placed within this callback function
 socketListener.sockets.on("connection", function(socket) {
 
+	function awsFeedback(err, data, socketEvent) {
+    	// Emits a socket event and passes the error and data objects that will come from the AWS service call
+    	socket.emit(socketEvent, {err: err, data: data});
+	}
+
 	// Listen for create-room event, which is called when the user clicks the submit button in the "Create A Room" section on the landing page
 	socket.on("create-room", function(data) {
 
@@ -45,6 +50,13 @@ socketListener.sockets.on("connection", function(socket) {
 		var instructor = data.instructorName;
         var emails = data.emails;
 
+        // Countdown for number of bucket creation fails - after this many fails, the server will give up trying to create a room
+        var bucketFails = 5;
+
+        // Countdown for number of DynamoDB add item fails
+        var dynamoFails = 5;
+
+        // This function will be provided a boolean of whether or not a unique ID has been generated
 		function testIDCallback(result) {
 			if (result === false) {
 				// The ID is not unique - generate another random ID then check if unique
@@ -53,17 +65,54 @@ socketListener.sockets.on("connection", function(socket) {
 			}
 			else {
 				// The ID is unique, create the room's bucket and entry in database
-				console.log("Creating bucket with roomID " + roomID);
-				aws.createBucket(roomID);
-				aws.addRoomToDB(roomName, roomID);
-				aws.sendEmail(emails, instructor);
+				console.log("Creating room with ID " + roomID);
+				aws.createBucket(roomID, createBucketCallback);
 			}
 		}
 
-		// Calls the test and will fire the testIDCallback when finished, resulting in bucket and DB entry creation
+		function createBucketCallback(err, data) {
+
+			if (err && bucketFails > 0) {
+				// If the bucket could not be created, it is assumed that the bucket name is already taken
+				// Generate a new room ID, test it, then try creating a bucket again
+				console.log("Could not create room with ID " + roomID);
+				bucketFails--;
+				roomID = aws.randID();
+				aws.testRoomID(roomID, testIDCallback);
+			} 
+			else if (bucketFails > 0) {
+				// Bucket was created successfully, emit event to socket to signal success
+				socket.emit("complete-bucket", {err: err, data: data});
+
+				// Continue with creating the room
+				aws.addRoomToDB(roomName, roomID, addToDBCallback);
+				aws.sendEmail(emails, instructor, awsFeedback);
+			}
+			else
+				socket.emit("complete-bucket", {err: err, data: data});
+		}
+
+		function addToDBCallback(err, data) {
+			if (err && dynamoFails > 0) {
+				dynamoFails--;
+
+				// Retry the database add
+				aws.addRoomToDB(roomName, roomID, addToDBCallback);
+			}
+			else {
+				socket.emit("complete-db-add", {err: err, data: data});
+			}
+		}
+
+		// Calls the test and will fire the testIDCallback (along with the rest of the callbacks) when finished, resulting in bucket, DB entry creation, and sending of emails
 		aws.testRoomID(roomID, testIDCallback);
 	});
 
-});
+	socket.on("resend-email", function(data) {
 
+		aws.sendEmail(data.emails, data.instructorName, awsFeedback);
+
+	});
+
+});
 
