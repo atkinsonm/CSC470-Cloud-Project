@@ -1,5 +1,13 @@
 var inputData = {};
 
+function utf8_to_b64(str) {
+    return window.btoa(unescape(encodeURIComponent(str)));
+}
+
+function b64_to_utf8(str) {
+    return decodeURIComponent(escape(window.atob(str)));
+}
+
 $(document).ready(function() {
 
 	var socketIOFileName = document.documentURI + "socket.io/socket.io.js";
@@ -37,15 +45,13 @@ $(document).ready(function() {
 					'extension' : file.name.split('.')[1],
 					'data' : evt.target.result
 				}
-				
-				console.log(inputData);
+
+				// Emit a socket event to the server and send the input data
+				socket.emit('create-room', inputData);
 			}
 
 			// reading the file.
-			FReader.readAsBinaryString(file);	
-
-			// Emit a socket event to the server and send the input data
-			//socket.emit('create-room', inputData);
+			FReader.readAsDataURL(file);	
 		});
 	});
 });

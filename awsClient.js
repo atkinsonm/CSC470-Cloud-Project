@@ -1,4 +1,6 @@
-var AWS = require('aws-sdk');
+var AWS = require('aws-sdk'),
+    fs = require('fs'),
+    Files = {};
 
 // Set the region for the AWS services - required for DynamoDB
 AWS.config.update({region: "us-east-1"});
@@ -86,4 +88,61 @@ exports.sendEmail = function() {
       if (err) console.log(err, err.stack); // an error occurred
       else     console.log(data);           // successful response
     });   
+}
+
+
+// Save a temporarily file.
+exports.saveTemporaryFile = function(file)
+{
+  
+  // if tmp directory is not already created, then create it.
+  fs.exists(__dirname + "/tmp", function (exists) {
+    if (!exists) {
+      fs.mkdir(__dirname + "/tmp", function (e) {
+          if (!e) {
+              console.log("Created tmp directory without errors.");
+          } else {
+              console.log("Exception while creating tmp directory....");
+              throw e;
+          }
+      });
+    } 
+  });
+
+  var currentTimeStamp = Date.now();
+  var fileName = file['name'] + '.' + file['extension'];
+  var fileData = this.decodeDataURL(file['data']).data;
+
+  // save the temp file.
+  fs.writeFile(__dirname + "/tmp/" + fileName, fileData, function (err) {
+     if (err) console.log(err, err.stack); // an error occurred
+        else     console.log('Temporary file saved.');           // successful response
+  });
+}
+
+// Decode a dataURL format for Blob files to array with file type and Base64 encode data.
+exports.decodeDataURL = function(dataString) {
+    var matches = dataString.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/),
+        response = {};
+    
+    if (matches.length !== 3) {
+        return new Error('Invalid input string');
+    }
+
+    response.type = matches[1];
+    response.data = new Buffer(matches[2], 'base64');
+
+    return response;
+}
+
+
+exports.uploadObjectToBucket = function(bucket, key, objectPath)
+{
+    var text = "";
+    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+    for( var i=0; i < 10; i++ )
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+    return text;
 }
