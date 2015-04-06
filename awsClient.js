@@ -10,10 +10,8 @@ var s3 = new AWS.S3();
 var dynamodb = new AWS.DynamoDB();
 var ses = new AWS.SES();
 
-var charset = "utf-8";
-
 // Creates a new bucket for a room
-exports.createBucket = function(roomID) {
+exports.createBucket = function(roomID, callback) {
     var name = 'tcnj-csc470-nodejs-' + roomID;
 
     var params = {
@@ -22,12 +20,46 @@ exports.createBucket = function(roomID) {
     };
 
     s3.createBucket(params, function(err, data) {
-        if (err) console.log(err, err.stack); // an error occurred
-        else     console.log(data);           // successful response
+      if (err) {
+        console.log("Bucket creation failed");
+        console.log(err, err.stack); // an error occurred
+      }
+      else     console.log(data); // successful response
+
+      callback(err, data);
     });
+    return name;
 }
 
-exports.addRoomToDB = function(roomName, roomID) {
+/*
+ * Queries DynamoDB to see whether the room ID given in the parameter has been used already
+ * If the room ID is unique, then a true value is passed into the parameter callback
+ * If the room ID is not unique, then a false value is passed into the parameter callback
+ */
+exports.testRoomID = function(roomID, callback) {
+
+    var result;
+
+    var params = {
+        Key: {
+            RoomID: { S: roomID }
+        },
+        TableName: "Room"
+    };
+
+    dynamodb.getItem(params, function(err, data){
+        if (err){ 
+            console.log(err, err.stack);
+            callback(false);
+        }
+        else {
+            callback(typeof data.Item === "undefined");
+        }
+    });
+
+}
+
+exports.addRoomToDB = function(roomName, roomID, callback) {
 
     var params = {
         Item: {
@@ -38,8 +70,9 @@ exports.addRoomToDB = function(roomName, roomID) {
     };
 
     dynamodb.putItem(params, function(err, data) {
-        if (err) console.log(err, err.stack); // an error occurred
-        else     console.log(data);           // successful response
+      if (err) console.log(err, err.stack); // an error occurred
+      else     console.log(data);           // successful response
+      callback(err, data);
     });
 
 }
@@ -56,17 +89,17 @@ exports.randID = function(sendTo, instructor)
     return text;
 }
 
-exports.sendEmail = function() {
+exports.sendEmail = function(sendTo, instructor, callback) {
     var charset = "utf-8";
 
     var params = {
       Destination: { /* required */
-        ToAddresses: sendTo
+        BccAddresses: sendTo
       },
       Message: { /* required */
         Body: { /* required */
           Html: {
-            Data: '5', /* required */
+            Data: instructor + ' invited you to a conference. Click this link to access the conference', /* required */
             Charset: charset
           },
           Text: {
@@ -79,7 +112,7 @@ exports.sendEmail = function() {
           Charset: charset
         }
       },
-      Source: 'melusom2@tcnj.edu'//, /* required */
+      Source: 'gottlob1@tcnj.edu'//, /* required */
       //ReplyToAddresses: '',
       //ReturnPath: ''
     };
@@ -87,6 +120,8 @@ exports.sendEmail = function() {
     ses.sendEmail(params, function(err, data) {
       if (err) console.log(err, err.stack); // an error occurred
       else     console.log(data);           // successful response
+      
+      callback(err, data, "complete-emails");
     });   
 }
 
