@@ -37,26 +37,24 @@ socketListener.sockets.on("connection", function(socket) {
 
 		var bucket = aws.createBucket(roomID);
         
-        var instructor = data.instructorName;
-        var emails = utils.validateEmailAddr(data.emails);
-        if (emails.length >= 1 && emails[0] != '') { 
-            console.log("Invitees:");
-            for (var i = 0; i < emails.length; i++) {
-                console.log("\t" + emails[i]);
-            }
-            aws.sendEmail(emails, instructor); 
-        } else { console.log("No invitees."); }
-        
-		var instructor = data.instructorName;
-        var emails = data.emails;
-
-        // Countdown for number of bucket creation fails - after this many fails, the server will give up trying to create a room
-        var bucketFails = 5;
-
-        // Countdown for number of DynamoDB add item fails
-        var dynamoFails = 5;
-
-        // This function will be provided a boolean of whether or not a unique ID has been generated
+	        // Validate email addresses and send message to recipients
+	        var instructor = data.instructorName;
+	        var emails = utils.validateEmailAddr(data.emails);
+	        if (emails.length >= 1 && emails[0] != '') { 
+	            console.log("Invitees:");
+	            for (var i = 0; i < emails.length; i++) {
+	                console.log("\t" + emails[i]);
+	            }
+	            aws.sendEmail(data.emails, data.instructorName, awsFeedback); 
+	        } else { console.log("No invitees."); }
+	
+	        // Countdown for number of bucket creation fails - after this many fails, the server will give up trying to create a room
+	        var bucketFails = 5;
+	
+	        // Countdown for number of DynamoDB add item fails
+	        var dynamoFails = 5;
+	
+	        // This function will be provided a boolean of whether or not a unique ID has been generated
 		function testIDCallback(result) {
 			if (result === false) {
 				// The ID is not unique - generate another random ID then check if unique
@@ -69,9 +67,9 @@ socketListener.sockets.on("connection", function(socket) {
 				aws.createBucket(roomID, createBucketCallback);
 			}
 		}
-
+	
 		function createBucketCallback(err, data) {
-
+	
 			if (err && bucketFails > 0) {
 				// If the bucket could not be created, it is assumed that the bucket name is already taken
 				// Generate a new room ID, test it, then try creating a bucket again
@@ -83,7 +81,7 @@ socketListener.sockets.on("connection", function(socket) {
 			else if (bucketFails > 0) {
 				// Bucket was created successfully, emit event to socket to signal success
 				socket.emit("complete-bucket", {err: err, data: data});
-
+	
 				// Continue with creating the room
 				aws.addRoomToDB(roomName, roomID, addToDBCallback);
 				aws.sendEmail(emails, instructor, awsFeedback);
@@ -91,11 +89,11 @@ socketListener.sockets.on("connection", function(socket) {
 			else
 				socket.emit("complete-bucket", {err: err, data: data});
 		}
-
+	
 		function addToDBCallback(err, data) {
 			if (err && dynamoFails > 0) {
 				dynamoFails--;
-
+	
 				// Retry the database add
 				aws.addRoomToDB(roomName, roomID, addToDBCallback);
 			}
@@ -109,9 +107,7 @@ socketListener.sockets.on("connection", function(socket) {
 	});
 
 	socket.on("resend-email", function(data) {
-
 		aws.sendEmail(data.emails, data.instructorName, awsFeedback);
-
 	});
 
 });
