@@ -37,6 +37,13 @@ socketListener.sockets.on("connection", function(socket) {
         // Create random ID
         var roomID = aws.randID();
         instructor = data.instructorName;
+
+		var roomName = data.roomName;
+		// Generate a random ID
+		var roomID = aws.randID();
+
+        // Countdown for number of bucket creation fails - after this many fails, the server will give up trying to create a room
+        var bucketFails = 5;
         
         // Validate email addresses and send message to recipients
         var emailExists = true;
@@ -115,3 +122,4 @@ socketListener.sockets.on("connection", function(socket) {
 	});
 
 });
+
