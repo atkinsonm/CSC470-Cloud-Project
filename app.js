@@ -18,6 +18,10 @@ var socketListener = io.listen(app);
 // All event listeners are to be placed within this callback function
 socketListener.sockets.on("connection", function(socket) {
 
+    // Declare these globally so they can be used by the create-room and resend-email listeners
+    var instructor;
+    var emails;
+    
 	function awsFeedback(err, data, socketEvent) {
     	// Emits a socket event and passes the error and data objects that will come from the AWS service call
     	socket.emit(socketEvent, {err: err, data: data});
@@ -28,34 +32,21 @@ socketListener.sockets.on("connection", function(socket) {
 
 		// These console.log statements are for debugging purposes - they may be deleted later
 		console.log("Creating room with instructor name " + data.instructorName + " room name " + data.roomName);
-
-		var roomName = data.roomName;
-		// Generate a random ID
-		var roomID = aws.randID();
     
-        // Validate email addresses and send message to recipients
-        var instructor = data.instructorName;
-        var emails = utils.validateEmailAddr(data.emails);
-        if (emails.length >= 1 && emails[0] != '') { 
-            console.log("Invitees:");
-            for (var i = 0; i < emails.length; i++) {
-                console.log("\t" + emails[i]);
-            }
-            aws.sendEmail(data.emails, data.instructorName, awsFeedback); 
-        } else { console.log("No invitees."); }
-
-        // Countdown for number of bucket creation fails - after this many fails, the server will give up trying to create a room
-        var bucketFails = 5;
+        var roomName = data.roomName;
+        // Create random ID
+        var roomID = aws.randID();
+        instructor = data.instructorName;
         
         // Validate email addresses and send message to recipients
-        var instructor = data.instructorName;
-        var emails = utils.validateEmailAddr(data.emails);
+        var emailExists = true;
+        emails = utils.validateEmailAddr(data.emails);
         if (emails.length >= 1 && emails[0] != '') { 
             console.log("Invitees:");
             for (var i = 0; i < emails.length; i++) {
                 console.log("\t" + emails[i]);
             } 
-        } else { console.log("No invitees."); }
+        } else { console.log("No invitees."); emailExists=false; }
 
         // Countdown for number of bucket creation fails - after this many fails, the server will give up trying to create a room
         var bucketFails = 5;
@@ -67,8 +58,8 @@ socketListener.sockets.on("connection", function(socket) {
 		function testIDCallback(result) {
 			if (result === false) {
 				// The ID is not unique - generate another random ID then check if unique
-				roomID = aws.randID();
-				aws.testRoomID(roomID, testCallback);
+                roomID = aws.randID();
+				aws.testRoomID(roomID, testIDCallback);
 			}
 			else {
 				// The ID is unique, create the room's bucket and entry in database
@@ -76,19 +67,6 @@ socketListener.sockets.on("connection", function(socket) {
 				aws.createBucket(roomID, createBucketCallback);
 			}
 		}
-
-        function testIDCallback(result) {
-            if (result === false) {
-                // The ID is not unique - generate another random ID then check if unique
-                roomID = aws.randID();
-                aws.testRoomID(roomID, testCallback);
-            }
-            else {
-                // The ID is unique, create the room's bucket and entry in database
-                console.log("Creating room with ID " + roomID);
-                aws.createBucket(roomID, createBucketCallback);
-            }
-        }
 	
 		function createBucketCallback(err, data) {
 	
@@ -106,7 +84,8 @@ socketListener.sockets.on("connection", function(socket) {
 	
 				// Continue with creating the room
 				aws.addRoomToDB(roomName, roomID, addToDBCallback);
-				aws.sendEmail(emails, instructor, awsFeedback);
+				if (emailExists) { aws.sendEmail(emails, instructor, awsFeedback); }
+                else { awsFeedback(null,null,"no-emails") };
 			}
 			else
 				socket.emit("complete-bucket", {err: err, data: data});
@@ -116,6 +95,7 @@ socketListener.sockets.on("connection", function(socket) {
 			if (err && dynamoFails > 0) {
 				dynamoFails--;
 	
+                console.log("Retrying " + roomName + " and " + roomID);
 				// Retry the database add
 				aws.addRoomToDB(roomName, roomID, addToDBCallback);
 			}
@@ -129,7 +109,9 @@ socketListener.sockets.on("connection", function(socket) {
 	});
 
 	socket.on("resend-email", function(data) {
-		aws.sendEmail(data.emails, data.instructorName, awsFeedback);
+        instructor = data.instructorName;
+        emails = utils.validateEmailAddr(data.emails);
+		aws.sendEmail(emails, instructor, awsFeedback);
 	});
 
 });

@@ -90,6 +90,12 @@ $(document).ready(function() {
 				emailLabel.text("Successfully sent emails!");
 
 		});
+        
+        socket.on("no-emails", function(response) {
+            var emailLabel = $("#sendingemails");
+            emailLabel.text("No email addresses entered. Enter addresses and press retry to send notifications if applicable.");
+            $("#retryemail").removeClass("hide");
+        });
 
 
 	});
