@@ -12,124 +12,115 @@ $(document).ready(function() {
 
 	var socketIOFileName = document.documentURI + "socket.io/socket.io.js";
 
-	$.getScript(socketIOFileName, function() {
+	var socket = io();
 
-		var socket = io.connect(document.documentURI);
+	$('#roomcreateform').submit(function(e) {
 
-		$('#roomcreateform').submit(function(e) {
+		e.preventDefault();
 
-			e.preventDefault();
+		// Create an array of email addresses from input string
+		var emails = $('#emailsinput').val().split(',');
 
-			// Create an array of email addresses from input string
-			var emails = $('#emailsinput').val().split(',');
+		// Trim whitespace from each string
+		for (var count = 0; count < emails.length; count++) {
+			emails[count] = emails[count].trim();
+		}
 
-			// Trim whitespace from each string
-			for (var count = 0; count < emails.length; count++) {
-				emails[count] = emails[count].trim();
+		// A JS object that is sent to the server - packages the input data
+		var inputData = {
+			instructorName: $('#instructornameinput').val(),
+			roomName: $('#roomnameinput').val(),
+			emails: emails
+		};
+
+		// getting the file object using jquery.
+		var file = $('#presentationfile')[0].files[0];
+
+		// preparing the file reader and events.
+		var FReader = new FileReader();
+
+		FReader.onloadend = function(evt){
+			inputData.file = {
+				'name' : file.name.split('.')[0],
+				'extension' : file.name.split('.')[1],
+				'data' : evt.target.result
 			}
 
-			// A JS object that is sent to the server - packages the input data
-			inputData = {
-				instructorName: $('#instructornameinput').val(),
-				roomName: $('#roomnameinput').val(),
-				emails: emails
-			};
-
-			// getting the file object using jquery.
-			var file = $('#presentationfile')[0].files[0];
-
-			// preparing the file reader and events.
-			var FReader = new FileReader();
-
-			FReader.onloadend = function(evt){
-				inputData.file = {
-					'name' : file.name.split('.')[0],
-					'extension' : file.name.split('.')[1],
-					'data' : evt.target.result
-				}
-
-				// Emit a socket event to the server and send the input data
-				socket.emit('create-room', inputData);
-			}
-
-			// reading the file.
-			if (file != undefined) {
-				FReader.readAsDataURL(file);	
-			}
-			else {
-				// Emit a socket event to the server and send the input data
-				socket.emit('create-room', inputData);	
-			}
+			// Emit a socket event to the server and send the input data
+			socket.emit('create-room', inputData);
 
 			// Unhide status message
 			$("#creatingbucket").removeClass("hide");
+		}
 
-		});
+		// reading the file.
+		if (file != undefined) {
+			FReader.readAsDataURL(file);	
+		}
+		else {
+			// Emit a socket event to the server and send the input data
+			socket.emit('create-room', inputData);	
 
-		$("#retryemail").on("click", function(){
+			// Unhide status message
+			$("#creatingbucket").removeClass("hide");
+		}
+	});
 
-			// Create an array of email addresses from input string
-			var emails = $('#emailsinput').val().split(',');
+	$("#retryemail").on("click", function(){
 
-			// Trim whitespace from each string
-			for (var count = 0; count < emails.length; count++) {
-				emails[count] = emails[count].trim();
-			}
+		// Create an array of email addresses from input string
+		var emails = $('#emailsinput').val().split(',');
 
-			var inputData = {
-				instructorName: $('#instructornameinput').val(),
-				roomName: $('#roomnameinput').val(),
-				emails: emails
-			};
+		// Trim whitespace from each string
+		for (var count = 0; count < emails.length; count++) {
+			emails[count] = emails[count].trim();
+		}
 
-			$("#sendingemails").text("Attempting to resend emails...");
-			$("#retryemail").addClass("hide");
+		var inputData = {
+			instructorName: $('#instructornameinput').val(),
+			roomName: $('#roomnameinput').val(),
+			emails: emails
+		};
 
-			socket.emit("resend-email", inputData);
-		});
+		$("#sendingemails").text("Attempting to resend emails...");
+		$("#retryemail").addClass("hide");
 
-		socket.on("complete-bucket", function(response) {
+		socket.emit("resend-email", inputData);
+	});
 
-			if (response.err) {
-				$("#creatingbucket").text("Error creating bucket - could not create room. Try again later");
-			}
-			else {
-				$("#creatingbucket").text("Bucket created successfully!");
-				$("#addingdbitem").removeClass("hide");
-				$("#sendingemails").removeClass("hide");
-			}
+	socket.on("complete-bucket", function(response) {
 
-		});
+		if (response.err) {
+			$("#creatingbucket").text("Error creating bucket - could not create room. Try again later");
+		}
+		else {
+			$("#creatingbucket").text("Bucket created successfully!");
+			$("#addingdbitem").removeClass("hide");
+			$("#sendingemails").removeClass("hide");
+		}
 
-		socket.on("complete-db-add", function(response) {
+	});
 
-			if (response.err) {
-				$("#addingdbitem").text("Error creating dynamo entry - could not create room. Try again later");
-			}
-			else
-				$("#addingdbitem").text("Dynamo entry created successfully!");
+	socket.on("complete-db-add", function(response) {
 
-		});
+		if (response.err) {
+			$("#addingdbitem").text("Error creating dynamo entry - could not create room. Try again later");
+		}
+		else
+			$("#addingdbitem").text("Dynamo entry created successfully!");
 
-		socket.on("complete-emails", function(response) {
+	});
 
-			var emailLabel = $("#sendingemails");
+	socket.on("complete-emails", function(response) {
 
-			if (response.err) {
-				emailLabel.text("Error sending emails: ensure you have typed in emails correctly");
-				$("#retryemail").removeClass("hide");
-			}
-			else
-				emailLabel.text("Successfully sent emails!");
+		var emailLabel = $("#sendingemails");
 
-		});
-        
-        socket.on("no-emails", function(response) {
-            var emailLabel = $("#sendingemails");
-            emailLabel.text("No email addresses entered. Enter addresses and press retry to send notifications if applicable.");
-            $("#retryemail").removeClass("hide");
-        });
-
+		if (response.err) {
+			emailLabel.text("Error sending emails: ensure you have typed in emails correctly");
+			$("#retryemail").removeClass("hide");
+		}
+		else
+			emailLabel.text("Successfully sent emails!");
 
 	});
 });

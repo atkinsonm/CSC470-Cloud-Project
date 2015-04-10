@@ -1,22 +1,39 @@
-var connect = require("connect"),
-	io = require("socket.io"),
-	aws = require("./awsClient.js"),
+var bodyParser = require("body-parser"),
+	aws = require("./awsClient.js")
 	validator = require("./validator.js");
 
-var app = connect()
-	.use(connect.bodyParser()) // Allows server to read variables in a submitted form
-	.use(connect.static("public")) // Fetches content from the newroom directory and serves it to the requester
-	.use(function (req, res) { 
-		// If the public folder cannot satisfy the request, this function runs
-		res.end("Invalid request: page not found");
-	})
-	.listen(3000);
+var app = require("express")();
+var http = require("http").Server(app);
+var io = require('socket.io')(http);
 
-// Start listening for sockets
-var socketListener = io.listen(app);
+var clientDir = "/public"
 
-// All event listeners are to be placed within this callback function
-socketListener.sockets.on("connection", function(socket) {
+// Allows server to read variables submitted in HTTP request
+//app.use(bodyParser.json());
+
+// Fetches content from the public directory and serves it to the requester
+//app.use(express.static("public"));
+
+http.listen(3000, function() {
+	console.log("HTTP server listening on port 3000");
+});
+
+app.get('/', function (req, res) {
+	res.sendFile(__dirname + clientDir + '/index.html');
+});
+
+app.get("/:fileName", function(req, res) {
+	res.sendFile(__dirname + clientDir + "/" + req.params.fileName);
+});
+
+/*app.use(function (req, res) { 
+	// If the public folder cannot satisfy the request, this function runs
+	res.end("Invalid request: page not found");
+});*/
+
+io.on("connection", function(socket) {
+
+	console.log("a user connected");
 
     // Declare these globally so they can be used by the create-room and resend-email listeners
     var instructor;
@@ -37,11 +54,12 @@ socketListener.sockets.on("connection", function(socket) {
         // Create random ID
         var roomID = aws.randID();
         instructor = data.instructorName;
+        emails = data.emails;
 
 		var roomName = data.roomName;
 		// Generate a random ID
 		var roomID = aws.randID();
-        
+
         // Populate email addresses from form data and send message to recipients
         var emailExists = true;
         emails = data.emails;
@@ -99,12 +117,7 @@ socketListener.sockets.on("connection", function(socket) {
 				// Continue with creating the room
 				aws.addRoomToDB(roomName, roomID, addToDBCallback);
 
-				if (emailExists) {					
-					aws.sendEmail(emails, instructor, awsFeedback); 
-				}
-                else { 
-                	awsFeedback(null,null,"no-emails") 
-                }
+				aws.sendEmail(emails, instructor, awsFeedback);
 			}
 			else
 				socket.emit("complete-bucket", {err: err, data: data});
@@ -129,12 +142,11 @@ socketListener.sockets.on("connection", function(socket) {
 
 	socket.on("resend-email", function(data) {
         instructor = data.instructorName;
-        emails = data.emails;
-		aws.sendEmail(emails, instructor, awsFeedback);
+		aws.sendEmail(data.emails, instructor, awsFeedback);
 	});
     
-    // Listen for create-room event, which is called when the user clicks the submit button in the "Create A Room" section on the landing page
-	socket.on("create-room", function(data) {
+    // Listen for delete-room event, which is called when the instructor leaves the room
+	socket.on("delete-room", function(data) {
         var roomName = data.roomName;
         var roomID = data.roomID;
         
