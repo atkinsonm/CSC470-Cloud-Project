@@ -117,8 +117,8 @@ socketListener.sockets.on("connection", function(socket) {
 		aws.sendEmail(emails, instructor, awsFeedback);
 	});
     
-    // Listen for create-room event, which is called when the user clicks the submit button in the "Create A Room" section on the landing page
-	socket.on("create-room", function(data) {
+    // Listen for delete-room event, which is called when the instructor leaves the room
+	socket.on("delete-room", function(data) {
         var roomName = data.roomName;
         var roomID = data.roomID;
         

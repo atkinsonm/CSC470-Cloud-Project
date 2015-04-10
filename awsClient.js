@@ -126,6 +126,7 @@ exports.sendEmail = function(sendTo, instructor, callback) {
 
     var params = {
       Destination: { /* required */
+        ToAddresses: [ 'davincinode@gmail.com' ],
         BccAddresses: sendTo
       },
       Message: { /* required */
@@ -144,9 +145,9 @@ exports.sendEmail = function(sendTo, instructor, callback) {
           Charset: charset
         }
       },
-      Source: 'gottlob1@tcnj.edu', /* required */
+      Source: 'davincinode@gmail.com', /* required */
       //ReplyToAddresses: '',
-      ReturnPath: 'gottlob1@tcnj.edu'
+      ReturnPath: 'davincinode@gmail.com'
     };
 
     ses.sendEmail(params, function(err, data) {
