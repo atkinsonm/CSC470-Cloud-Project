@@ -2,6 +2,8 @@ $(document).ready(function() {
 
 	var socketIOFileName = document.documentURI + "socket.io/socket.io.js";
 
+	var socket = io();
+
 	$.getScript(socketIOFileName, function() {
 
 		var socket = io.connect(document.documentURI);
@@ -90,12 +92,6 @@ $(document).ready(function() {
 				emailLabel.text("Successfully sent emails!");
 
 		});
-        
-        socket.on("no-emails", function(response) {
-            var emailLabel = $("#sendingemails");
-            emailLabel.text("No email addresses entered. Enter addresses and press retry to send notifications if applicable.");
-            $("#retryemail").removeClass("hide");
-        });
 
 
 	});
