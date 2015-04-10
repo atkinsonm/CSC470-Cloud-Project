@@ -45,7 +45,7 @@ exports.testRoomID = function(roomID, callback) {
         TableName: "Room"
     };
 
-    dynamodb.getItem(params, function(err, data){
+    dynamodb.getItem(params, function(err, data) {
         if (err){ 
             console.log(err, err.stack);
             callback(false);
@@ -72,7 +72,6 @@ exports.addRoomToDB = function(roomName, roomID, callback) {
       else     console.log(data);           // successful response
       callback(err, data);
     });
-
 }
 
 // Generates a random room ID string
@@ -90,8 +89,11 @@ exports.randID = function(sendTo, instructor)
 exports.sendEmail = function(sendTo, instructor, callback) {
     var charset = "utf-8";
 
+    console.log(sendTo);
+
     var params = {
       Destination: { /* required */
+        ToAddresses: ['davincinode@gmail.com'],
         BccAddresses: sendTo
       },
       Message: { /* required */
@@ -110,9 +112,9 @@ exports.sendEmail = function(sendTo, instructor, callback) {
           Charset: charset
         }
       },
-      Source: 'gottlob1@tcnj.edu'//, /* required */
+      Source: 'davincinode@gmail.com', /* required */
       //ReplyToAddresses: '',
-      //ReturnPath: ''
+      ReturnPath: 'davincinode@gmail.com'
     };
 
     ses.sendEmail(params, function(err, data) {

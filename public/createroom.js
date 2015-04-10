@@ -2,6 +2,8 @@ $(document).ready(function() {
 
 	var socketIOFileName = document.documentURI + "socket.io/socket.io.js";
 
+	var socket = io();
+
 	$.getScript(socketIOFileName, function() {
 
 		var socket = io.connect(document.documentURI);
