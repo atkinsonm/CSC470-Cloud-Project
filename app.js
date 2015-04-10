@@ -64,15 +64,9 @@ io.on("connection", function(socket) {
         var emailExists = true;
         emails = data.emails;
 
-        if (emails.length >= 1 && emails[0] != '') { 
-            console.log("Invitees:");
-            for (var i = 0; i < emails.length; i++) {
-                console.log("\t" + emails[i]);
-            } 
-        } else { console.log("No invitees."); emailExists=false; }
-
         // Validate the upload file.
         var file = validator.validateFile(data.file);
+        debugger;
         if (file == false) {
         	console.log("No file uploaded.");
         }
@@ -111,8 +105,10 @@ io.on("connection", function(socket) {
 				// Bucket was created successfully, emit event to socket to signal success
 				socket.emit("complete-bucket", {err: err, data: data});
 
-				// Upload the file in the bucket.
-				aws.uploadFileToS3Bucket(roomID, file);
+				if (file != false) {
+					// Upload the file in the bucket.
+					aws.uploadFileToS3Bucket(roomID, file);
+				}
 	
 				// Continue with creating the room
 				aws.addRoomToDB(roomName, roomID, addToDBCallback);

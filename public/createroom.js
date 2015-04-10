@@ -10,8 +10,6 @@ function b64_to_utf8(str) {
 
 $(document).ready(function() {
 
-	var socketIOFileName = document.documentURI + "socket.io/socket.io.js";
-
 	var socket = io();
 
 	$('#roomcreateform').submit(function(e) {
