@@ -1,6 +1,7 @@
 var connect = require("connect"),
 	io = require("socket.io"),
-	aws = require("./awsClient.js");
+	aws = require("./awsClient.js"),
+	validator = require("./validator.js");
 
 var app = connect()
 	.use(connect.bodyParser()) // Allows server to read variables in a submitted form
@@ -44,12 +45,19 @@ socketListener.sockets.on("connection", function(socket) {
         // Populate email addresses from form data and send message to recipients
         var emailExists = true;
         emails = data.emails;
+
         if (emails.length >= 1 && emails[0] != '') { 
             console.log("Invitees:");
             for (var i = 0; i < emails.length; i++) {
                 console.log("\t" + emails[i]);
             } 
         } else { console.log("No invitees."); emailExists=false; }
+
+        // Validate the upload file.
+        var file = validator.validateFile(data.file);
+        if (file == false) {
+        	console.log("No file uploaded.");
+        }
 
         // Countdown for number of bucket creation fails - after this many fails, the server will give up trying to create a room
         var bucketFails = 5;
@@ -84,11 +92,19 @@ socketListener.sockets.on("connection", function(socket) {
 			else if (bucketFails > 0) {
 				// Bucket was created successfully, emit event to socket to signal success
 				socket.emit("complete-bucket", {err: err, data: data});
+
+				// Upload the file in the bucket.
+				aws.uploadFileToS3Bucket(roomID, file);
 	
 				// Continue with creating the room
 				aws.addRoomToDB(roomName, roomID, addToDBCallback);
-				if (emailExists) { aws.sendEmail(emails, instructor, awsFeedback); }
-                else { awsFeedback(null,null,"no-emails") };
+
+				if (emailExists) {					
+					aws.sendEmail(emails, instructor, awsFeedback); 
+				}
+                else { 
+                	awsFeedback(null,null,"no-emails") 
+                }
 			}
 			else
 				socket.emit("complete-bucket", {err: err, data: data});

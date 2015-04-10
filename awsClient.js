@@ -1,4 +1,6 @@
-var AWS = require('aws-sdk');
+var AWS = require('aws-sdk'),
+    fs = require('fs'),
+    Files = {};
 
 // Set the region for the AWS services - required for DynamoDB
 AWS.config.update({region: "us-east-1"});
@@ -155,4 +157,48 @@ exports.sendEmail = function(sendTo, instructor, callback) {
       
       callback(err, data, "complete-emails");
     });   
+}
+
+
+// Save a temporarily file.
+exports.uploadFileToS3Bucket = function(roomID, file)
+{
+  var bucketName = 'tcnj-csc470-nodejs-' + roomID;
+  var fileName = file['name'] + '.' + file['extension'];
+  var file = this.decodeDataURL(file['data']);
+  
+  var params = {
+      Bucket: bucketName,
+      Key: fileName,
+      ACL: 'public-read',
+      Body: file.data,
+      ContentType: file.type
+
+  };
+
+  s3.putObject(params, function(err, data) {
+    if (err) {
+      console.log("File upload failed");
+      console.log(err, err.stack); // an error occurred
+    }
+    else {
+      console.log("File uploaded into bucket.")
+      console.log(data); // successful response  
+    }
+  });
+}
+
+// Decode a dataURL format for Blob files to array with file type and Base64 encode data.
+exports.decodeDataURL = function(dataString) {
+    var matches = dataString.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/),
+        response = {};
+    
+    if (matches.length !== 3) {
+        return new Error('Invalid input string');
+    }
+
+    response.type = matches[1];
+    response.data = new Buffer(matches[2], 'base64');
+
+    return response;
 }
