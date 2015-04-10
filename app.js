@@ -1,6 +1,5 @@
 var bodyParser = require("body-parser"),
-	aws = require("./awsClient.js"),
-    utils = require("./utils.js");
+	aws = require("./awsClient.js");
 
 var app = require("express")();
 var http = require("http").Server(app);
@@ -54,6 +53,7 @@ io.on("connection", function(socket) {
         // Create random ID
         var roomID = aws.randID();
         instructor = data.instructorName;
+        emails = data.emails;
 
 		var roomName = data.roomName;
 		// Generate a random ID
@@ -122,7 +122,6 @@ io.on("connection", function(socket) {
 	});
 
 	socket.on("resend-email", function(data) {
-		debugger;
         instructor = data.instructorName;
 		aws.sendEmail(data.emails, instructor, awsFeedback);
 	});

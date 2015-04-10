@@ -4,95 +4,88 @@ $(document).ready(function() {
 
 	var socket = io();
 
-	$.getScript(socketIOFileName, function() {
+	$('#roomcreateform').submit(function(e) {
 
-		var socket = io.connect(document.documentURI);
+		e.preventDefault();
 
-		$('#roomcreateform').submit(function(e) {
+		// Create an array of email addresses from input string
+		var emails = $('#emailsinput').val().split(',');
 
-			e.preventDefault();
+		// Trim whitespace from each string
+		for (var count = 0; count < emails.length; count++) {
+			emails[count] = emails[count].trim();
+		}
 
-			// Create an array of email addresses from input string
-			var emails = $('#emailsinput').val().split(',');
+		// A JS object that is sent to the server - packages the input data
+		var inputData = {
+			instructorName: $('#instructornameinput').val(),
+			roomName: $('#roomnameinput').val(),
+			emails: emails
+		};
 
-			// Trim whitespace from each string
-			for (var count = 0; count < emails.length; count++) {
-				emails[count] = emails[count].trim();
-			}
+		// Emit a socket event to the server and send the input data
+		socket.emit('create-room', inputData);
 
-			// A JS object that is sent to the server - packages the input data
-			var inputData = {
-				instructorName: $('#instructornameinput').val(),
-				roomName: $('#roomnameinput').val(),
-				emails: emails
-			};
+		// Unhide status message
+		$("#creatingbucket").removeClass("hide");
 
-			// Emit a socket event to the server and send the input data
-			socket.emit('create-room', inputData);
+	});
 
-			// Unhide status message
-			$("#creatingbucket").removeClass("hide");
+	$("#retryemail").on("click", function(){
 
-		});
+		// Create an array of email addresses from input string
+		var emails = $('#emailsinput').val().split(',');
 
-		$("#retryemail").on("click", function(){
+		// Trim whitespace from each string
+		for (var count = 0; count < emails.length; count++) {
+			emails[count] = emails[count].trim();
+		}
 
-			// Create an array of email addresses from input string
-			var emails = $('#emailsinput').val().split(',');
+		var inputData = {
+			instructorName: $('#instructornameinput').val(),
+			roomName: $('#roomnameinput').val(),
+			emails: emails
+		};
 
-			// Trim whitespace from each string
-			for (var count = 0; count < emails.length; count++) {
-				emails[count] = emails[count].trim();
-			}
+		$("#sendingemails").text("Attempting to resend emails...");
+		$("#retryemail").addClass("hide");
 
-			var inputData = {
-				instructorName: $('#instructornameinput').val(),
-				roomName: $('#roomnameinput').val(),
-				emails: emails
-			};
+		socket.emit("resend-email", inputData);
+	});
 
-			$("#sendingemails").text("Attempting to resend emails...");
-			$("#retryemail").addClass("hide");
+	socket.on("complete-bucket", function(response) {
 
-			socket.emit("resend-email", inputData);
-		});
+		if (response.err) {
+			$("#creatingbucket").text("Error creating bucket - could not create room. Try again later");
+		}
+		else {
+			$("#creatingbucket").text("Bucket created successfully!");
+			$("#addingdbitem").removeClass("hide");
+			$("#sendingemails").removeClass("hide");
+		}
 
-		socket.on("complete-bucket", function(response) {
+	});
 
-			if (response.err) {
-				$("#creatingbucket").text("Error creating bucket - could not create room. Try again later");
-			}
-			else {
-				$("#creatingbucket").text("Bucket created successfully!");
-				$("#addingdbitem").removeClass("hide");
-				$("#sendingemails").removeClass("hide");
-			}
+	socket.on("complete-db-add", function(response) {
 
-		});
+		if (response.err) {
+			$("#addingdbitem").text("Error creating dynamo entry - could not create room. Try again later");
+		}
+		else
+			$("#addingdbitem").text("Dynamo entry created successfully!");
 
-		socket.on("complete-db-add", function(response) {
+	});
 
-			if (response.err) {
-				$("#addingdbitem").text("Error creating dynamo entry - could not create room. Try again later");
-			}
-			else
-				$("#addingdbitem").text("Dynamo entry created successfully!");
+	socket.on("complete-emails", function(response) {
 
-		});
+		var emailLabel = $("#sendingemails");
 
-		socket.on("complete-emails", function(response) {
-
-			var emailLabel = $("#sendingemails");
-
-			if (response.err) {
-				emailLabel.text("Error sending emails: ensure you have typed in emails correctly");
-				$("#retryemail").removeClass("hide");
-			}
-			else
-				emailLabel.text("Successfully sent emails!");
-
-		});
-
+		if (response.err) {
+			emailLabel.text("Error sending emails: ensure you have typed in emails correctly");
+			$("#retryemail").removeClass("hide");
+		}
+		else
+			emailLabel.text("Successfully sent emails!");
 
 	});
 });
