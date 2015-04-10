@@ -1,7 +1,6 @@
 var connect = require("connect"),
 	io = require("socket.io"),
 	aws = require("./awsClient.js");
-    utils = require("./utils.js");
 
 var app = connect()
 	.use(connect.bodyParser()) // Allows server to read variables in a submitted form
@@ -45,9 +44,9 @@ socketListener.sockets.on("connection", function(socket) {
         // Countdown for number of bucket creation fails - after this many fails, the server will give up trying to create a room
         var bucketFails = 5;
         
-        // Validate email addresses and send message to recipients
+        // Populate email addresses from form data and send message to recipients
         var emailExists = true;
-        emails = utils.validateEmailAddr(data.emails);
+        emails = data.emails;
         if (emails.length >= 1 && emails[0] != '') { 
             console.log("Invitees:");
             for (var i = 0; i < emails.length; i++) {
@@ -117,7 +116,7 @@ socketListener.sockets.on("connection", function(socket) {
 
 	socket.on("resend-email", function(data) {
         instructor = data.instructorName;
-        emails = utils.validateEmailAddr(data.emails);
+        emails = data.emails;
 		aws.sendEmail(emails, instructor, awsFeedback);
 	});
 

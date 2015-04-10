@@ -5,8 +5,7 @@
   "dependencies": {
     "socket.io": "0.9.6",
     "connect": "1.9.2",
-    "aws-sdk": ">= 2.0.9",
-    "regex": "0.1.0"
+    "aws-sdk": ">= 2.0.9"
   },
   "author": "Team DaVinciNode"
 }
