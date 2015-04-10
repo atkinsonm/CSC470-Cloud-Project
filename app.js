@@ -40,9 +40,6 @@ socketListener.sockets.on("connection", function(socket) {
 		var roomName = data.roomName;
 		// Generate a random ID
 		var roomID = aws.randID();
-
-        // Countdown for number of bucket creation fails - after this many fails, the server will give up trying to create a room
-        var bucketFails = 5;
         
         // Populate email addresses from form data and send message to recipients
         var emailExists = true;
@@ -119,6 +116,45 @@ socketListener.sockets.on("connection", function(socket) {
         emails = data.emails;
 		aws.sendEmail(emails, instructor, awsFeedback);
 	});
+    
+    // Listen for create-room event, which is called when the user clicks the submit button in the "Create A Room" section on the landing page
+	socket.on("create-room", function(data) {
+        var roomName = data.roomName;
+        var roomID = data.roomID;
+        
+        // Countdown for number of bucket creation fails - after this many fails, the server will give up trying to create a room
+        var bucketFails = 5;
+
+        // Countdown for number of DynamoDB add item fails
+        var dynamoFails = 5;
+        
+        function deleteBucketCallback(err, data) {
+	
+			if (err && bucketFails > 0) {
+				// If the bucket could not be deleted, try again
+				bucketFails--;
+				aws.deleteBucket(roomID, deleteBucketCallback);
+			}
+			else socket.emit("delete-bucket", {err: err, data: data});
+		}
+        
+        function deleteFromDBCallback(err, data) {
+			if (err && dynamoFails > 0) {
+				dynamoFails--;
+	
+                console.log("Retrying " + roomName + " and " + roomID);
+				// Retry the database delete
+				aws.deleteRoomFromDB(roomName, roomID, deleteFromDBCallback);  
+			}
+			else {
+				socket.emit("delete-db-add", {err: err, data: data});
+			}
+		}
+        
+        aws.deleteBucket(roomID, deleteBucketCallback);
+        aws.deleteRoomFromDB(roomName, roomID, deleteFromDBCallback);       
+        
+    });
 
 });
 

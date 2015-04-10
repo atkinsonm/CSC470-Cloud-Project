@@ -29,6 +29,25 @@ exports.createBucket = function(roomID, callback) {
     return name;
 }
 
+// Deletes an AWS bucket and all objects it contains
+exports.deleteBucket = function(roomID, callback) {
+    var name = 'tcnj-csc470-nodejs-' + roomID;
+    
+    var params = {
+        Bucket: 'STRING_VALUE' /* required */
+    };
+    
+    s3.deleteBucket(params, function(err, data) {
+      if (err) {
+          console.log("Bucket creation failed");
+          console.log(err, err.stack); // an error occurred
+      }
+      else     console.log(data);      // successful response
+        
+        callback(err, data);
+    });
+}
+
 /*
  * Queries DynamoDB to see whether the room ID given in the parameter has been used already
  * If the room ID is unique, then a true value is passed into the parameter callback
@@ -68,6 +87,22 @@ exports.addRoomToDB = function(roomName, roomID, callback) {
     };
 
     dynamodb.putItem(params, function(err, data) {
+      if (err) console.log(err, err.stack); // an error occurred
+      else     console.log(data);           // successful response
+      callback(err, data);
+    });
+}
+
+exports.deleteRoomFromDB = function(roomName, roomID, callback) {
+    var params = {
+        Item: {
+            RoomID: { S: roomID },
+            RoomName: { S: roomName }
+        },
+        TableName: "Room"
+    };
+
+    dynamodb.deleteItem(params, function(err, data) {
       if (err) console.log(err, err.stack); // an error occurred
       else     console.log(data);           // successful response
       callback(err, data);
