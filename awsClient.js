@@ -1,4 +1,6 @@
-var AWS = require('aws-sdk');
+var AWS = require('aws-sdk'),
+    fs = require('fs'),
+    Files = {};
 
 // Set the region for the AWS services - required for DynamoDB
 AWS.config.update({region: "us-east-1"});
@@ -29,6 +31,25 @@ exports.createBucket = function(roomID, callback) {
     return name;
 }
 
+// Deletes an AWS bucket and all objects it contains
+exports.deleteBucket = function(roomID, callback) {
+    var name = 'tcnj-csc470-nodejs-' + roomID;
+    
+    var params = {
+        Bucket: 'STRING_VALUE' /* required */
+    };
+    
+    s3.deleteBucket(params, function(err, data) {
+      if (err) {
+          console.log("Bucket creation failed");
+          console.log(err, err.stack); // an error occurred
+      }
+      else     console.log(data);      // successful response
+        
+        callback(err, data);
+    });
+}
+
 /*
  * Queries DynamoDB to see whether the room ID given in the parameter has been used already
  * If the room ID is unique, then a true value is passed into the parameter callback
@@ -45,7 +66,7 @@ exports.testRoomID = function(roomID, callback) {
         TableName: "Room"
     };
 
-    dynamodb.getItem(params, function(err, data){
+    dynamodb.getItem(params, function(err, data) {
         if (err){ 
             console.log(err, err.stack);
             callback(false);
@@ -72,7 +93,22 @@ exports.addRoomToDB = function(roomName, roomID, callback) {
       else     console.log(data);           // successful response
       callback(err, data);
     });
+}
 
+exports.deleteRoomFromDB = function(roomName, roomID, callback) {
+    var params = {
+        Item: {
+            RoomID: { S: roomID },
+            RoomName: { S: roomName }
+        },
+        TableName: "Room"
+    };
+
+    dynamodb.deleteItem(params, function(err, data) {
+      if (err) console.log(err, err.stack); // an error occurred
+      else     console.log(data);           // successful response
+      callback(err, data);
+    });
 }
 
 // Generates a random room ID string
@@ -90,8 +126,11 @@ exports.randID = function(sendTo, instructor)
 exports.sendEmail = function(sendTo, instructor, callback) {
     var charset = "utf-8";
 
+    console.log(sendTo);
+
     var params = {
       Destination: { /* required */
+        ToAddresses: ['davincinode@gmail.com'],
         BccAddresses: sendTo
       },
       Message: { /* required */
@@ -110,9 +149,9 @@ exports.sendEmail = function(sendTo, instructor, callback) {
           Charset: charset
         }
       },
-      Source: 'gottlob1@tcnj.edu'//, /* required */
+      Source: 'davincinode@gmail.com', /* required */
       //ReplyToAddresses: '',
-      //ReturnPath: ''
+      ReturnPath: 'davincinode@gmail.com'
     };
 
     ses.sendEmail(params, function(err, data) {
@@ -121,4 +160,48 @@ exports.sendEmail = function(sendTo, instructor, callback) {
       
       callback(err, data, "complete-emails");
     });   
+}
+
+
+// Save a temporarily file.
+exports.uploadFileToS3Bucket = function(roomID, file)
+{
+  var bucketName = 'tcnj-csc470-nodejs-' + roomID;
+  var fileName = file['name'] + '.' + file['extension'];
+  var file = this.decodeDataURL(file['data']);
+  
+  var params = {
+      Bucket: bucketName,
+      Key: fileName,
+      ACL: 'public-read',
+      Body: file.data,
+      ContentType: file.type
+
+  };
+
+  s3.putObject(params, function(err, data) {
+    if (err) {
+      console.log("File upload failed");
+      console.log(err, err.stack); // an error occurred
+    }
+    else {
+      console.log("File uploaded into bucket.")
+      console.log(data); // successful response  
+    }
+  });
+}
+
+// Decode a dataURL format for Blob files to array with file type and Base64 encode data.
+exports.decodeDataURL = function(dataString) {
+    var matches = dataString.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/),
+        response = {};
+    
+    if (matches.length !== 3) {
+        return new Error('Invalid input string');
+    }
+
+    response.type = matches[1];
+    response.data = new Buffer(matches[2], 'base64');
+
+    return response;
 }

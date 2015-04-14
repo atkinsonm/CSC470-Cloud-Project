@@ -17,43 +17,66 @@
 		<script src="http://localhost:3000/socket.io/socket.io.js"></script>
 
 		<style type="text/css">
+			div#title{
+				margin-left: 10px;
+				font-family: "Arial";
+				font-size: 30px;
+				color: #D3D3D3;
+				float: left;
+				text-align: center;
+				padding-top: 15px;
+				text-shadow: 1px 1px 1px #444;
+				font-weight: bold;
+			}
 			body {
-			  background-color: #d0e4fe;
-			}
-			button{
-				padding: 10px;
-				margin: 10px;
-			}
-			p{
-				font-family: "Times New Roman";
-    			font-size: 32px;
-    			margin-left: 20px;
+				background-color: #7C302C;
 			}
 			div#presentation{
-				display: block;
-				margin:20px;
-				border: 1px solid #999;
-				height: auto;		
-			}
-			div#attendees{
-				display: block;
-				height: 250px;
-				border: 1px solid #999;
-				overflow: auto;
-				margin-top: 20px;
-				width: 100%;
-				margin-bottom: 10px;
-				position: relative;
+				margin-left: 20px;
+			    margin-right: auto;
+			    margin-bottom: 10px;
+			    background: #555;
+			    padding: 20px 30px 20px 30px;
+			    color: #D3D3D3;
+			    border: none;
+			    border-radius: 5px;
+			    -webkit-border-radius: 5px;
+	    		-moz-border-radius: 5px;
 
 			}
+			div#attendees{
+				margin-left: auto;
+			    margin-right: auto;
+			    margin-bottom: 10px;
+			    max-width: 100%;
+			    height: 250px;
+			    background: #555;
+			    padding-top: 10px;
+			    padding-left: 10px;
+			    padding-right: 5px;
+			    padding-bottom: 10px;
+			    font: 12px "Helvetica Neue", Helvetica, Arial, sans-serif;
+			    color: #D3D3D3;
+			    text-shadow: 1px 1px 1px #444;
+			    border: none;
+			    border-radius: 5px;
+			}
 			div#chatroom {
-				display: block;
-				height: 250px;
-				border: 1px solid #999;
-				overflow: auto;
-				width: 100%;
-				margin-bottom: 10px;
-				position: relative;
+				margin-left: auto;
+			    margin-right: auto;
+			    margin-bottom: 10px;
+			    max-width: 100%;
+			    height: 250px;
+			    background: #555;
+			    padding-top: 10px;
+			    padding-left: 10px;
+			    padding-right: 5px;
+			    padding-bottom: 10px;
+			    font: 12px "Helvetica Neue", Helvetica, Arial, sans-serif;
+			    color: #D3D3D3;
+			    text-shadow: 1px 1px 1px #444;
+			    border: none;
+			    border-radius: 5px;
 			}
 
 			ul#chat_log {
@@ -63,7 +86,50 @@
 			}
 
 			input#chat_box {
-				width: 99%;
+				border: none;
+			    color: #525252;
+			    height: 25px;
+			    line-height:15px;
+			    margin-bottom: 16px;
+			    margin-right: 6px;
+			    margin-top: 2px;
+			    outline: 0 none;
+			    padding: 5px 0px 5px 5px;
+			    width: 99%;
+			    border-radius: 2px;
+			    -webkit-border-radius: 2px;
+			    -moz-border-radius: 2px;
+			    -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+			    background: #DFDFDF;
+			}
+			.btn{
+				float: right;
+				margin-top: 10px;
+				width: auto;
+				margin-bottom: 5px;
+	 			background: #FFCC02;
+	   			border: none;
+	    		padding-top: 10px;
+	    		padding-bottom: 10px;  
+			    color: #585858;
+			    border-radius: 4px;
+			    -moz-border-radius: 4px;
+			    -webkit-border-radius: 4px;
+			    text-shadow: 1px 1px 1px #FFE477;
+			    font-weight: bold;
+			    box-shadow: 1px 1px 1px #3D3D3D;
+			    -webkit-box-shadow:1px 1px 1px #3D3D3D;
+			    -moz-box-shadow:1px 1px 1px #3D3D3D;
+			    background: #FFCC02;
+   			
+			}
+			.btn:hover{
+	  			color: #333;
+	    		background-color: #EBEBEB;
+			}
+			#raisehand{
+				height: 45px;
+    			width: 45px;
 			}
 		</style>
 
@@ -74,12 +140,14 @@
 
 	<body>
 		<div class = "row">
-			<div class ="col-xs-12 col-md-10"><p>Welcome to ROOM NAME</p></div>
-			<div class ="col-xs-12 col-md-2" id = "leavebutton"><button class = "btn btn-default">LEAVE ROOM</button></div>
+			<div class ="col-xs-12 col-md-7" id = "title">Welcome To ROOM NAME</div>
+			<div class ="col-xs-6 col-md-2"><input type="image" src="img/hand.png" id = "raisehand" class = "btn btn-default"></input></div>
+			<div class ="col-xs-6 col-md-2"><button class = "btn btn-default" id = "leavebutton">LEAVE ROOM</button></div>
+			
 		</div>
 		<div class="row">
-			<div class="col-xs-12 col-md-9 col-md-offset-1" id ="presentation">PRESENTATION GO HERE</div>
-  			<div class="col-xs-10 col-md-2"><div id = "attendees">CLASS LIST GOES HERE</div>
+			<div class="col-xs-12 col-md-9" id ="presentation">PRESENTATION GO HERE</div>
+  			<div class="col-xs-12 col-md-2"><div id = "attendees">CLASS LIST GOES HERE</div>
   				<div id="chatroom">
 					<ul id="chat_log"></ul>
 				</div>
