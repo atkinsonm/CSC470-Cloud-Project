@@ -169,11 +169,7 @@ exports.uploadFileToS3Bucket = function(roomID, file)
 {
   var bucketName = 'tcnj-csc470-nodejs-' + roomID;
   var fileName = file['name'] + '.' + file['extension'];
-<<<<<<< HEAD
   var file = dataUriToBuffer(file['data']);
-=======
-  var file = this.decodeDataURL(file['data']);
->>>>>>> b09212577804839f211676f22bfc4657645eca5e
   
   var params = {
       Bucket: bucketName,
