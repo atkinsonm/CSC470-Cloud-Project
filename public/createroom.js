@@ -37,7 +37,6 @@ $(document).ready(function() {
 		// preparing the file reader and events.
 		var FReader = new FileReader();
 
->>>>>>> b09212577804839f211676f22bfc4657645eca5e
 		FReader.onloadend = function(evt){
 			inputData.file = {
 				'name' : file.name.split('.')[0],
