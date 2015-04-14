@@ -169,7 +169,11 @@ exports.uploadFileToS3Bucket = function(roomID, file)
 {
   var bucketName = 'tcnj-csc470-nodejs-' + roomID;
   var fileName = file['name'] + '.' + file['extension'];
+<<<<<<< HEAD
   var file = dataUriToBuffer(file['data']);
+=======
+  var file = this.decodeDataURL(file['data']);
+>>>>>>> b09212577804839f211676f22bfc4657645eca5e
   
   var params = {
       Bucket: bucketName,
@@ -190,4 +194,19 @@ exports.uploadFileToS3Bucket = function(roomID, file)
       console.log(data); // successful response  
     }
   });
+}
+
+// Decode a dataURL format for Blob files to array with file type and Base64 encode data.
+exports.decodeDataURL = function(dataString) {
+    var matches = dataString.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/),
+        response = {};
+    
+    if (matches.length !== 3) {
+        return new Error('Invalid input string');
+    }
+
+    response.type = matches[1];
+    response.data = new Buffer(matches[2], 'base64');
+
+    return response;
 }
