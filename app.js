@@ -18,22 +18,29 @@ http.listen(3000, function() {
 	console.log("HTTP server listening on port 3000");
 });
 
-app.get('/', function (req, res) {
+app.get("/", function (req, res) {
 	res.sendFile(__dirname + clientDir + '/index.html');
 });
 
-app.get("/:fileName", function(req, res) {
+app.get("/:fileName", function (req, res) {
 	res.sendFile(__dirname + clientDir + "/" + req.params.fileName);
 });
 
-/*app.use(function (req, res) { 
-	// If the public folder cannot satisfy the request, this function runs
-	res.end("Invalid request: page not found");
-});*/
+// An array of active room IDs
+var activeRooms = [];
+
+app.get("/room/:roomID", function (req, res) {
+	if (activeRooms.indexOf(req.params.roomID) > -1) {
+		res.sendFile(__dirname + clientDir + "/testNamespaces.html");
+	}
+	else {
+		res.send("<h1>Room Not Found</h1>");
+	}
+});
 
 io.on("connection", function(socket) {
 
-	console.log("a user connected");
+	console.log("A user connected");
 
     // Declare these globally so they can be used by the create-room and resend-email listeners
     var instructor;
@@ -66,7 +73,7 @@ io.on("connection", function(socket) {
 
         // Validate the upload file.
         var file = validator.validateFile(data.file);
-        debugger;
+
         if (file == false) {
         	console.log("No file uploaded.");
         }
@@ -114,6 +121,9 @@ io.on("connection", function(socket) {
 				aws.addRoomToDB(roomName, roomID, addToDBCallback);
 
 				aws.sendEmail(emails, instructor, awsFeedback);
+
+				// Add the newly created room's ID to the list of active rooms
+				activeRooms.push(roomID);
 			}
 			else
 				socket.emit("complete-bucket", {err: err, data: data});
@@ -179,6 +189,14 @@ io.on("connection", function(socket) {
         aws.deleteRoomFromDB(roomName, roomID, deleteFromDBCallback);       
         
     });
+
+	socket.on("add-to-room", function(data) {
+		var roomID = data.roomID;
+		socket.room = roomID;
+		console.log("A new user entered the room " + roomID);
+		socket.join(roomID);
+		socket.broadcast.to(roomID).emit("update", {message: "A new user has connected"});
+	});
 
 });
 
