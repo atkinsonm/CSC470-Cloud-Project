@@ -1,6 +1,9 @@
+'use strict';
+
 var bodyParser = require("body-parser"),
-	aws = require("./awsClient.js")
-	validator = require("./validator.js");
+	aws = require("./awsClient.js"),
+	validator = require("./validator.js"),
+	getIP = require('external-ip')();
 
 var app = require("express")();
 var http = require("http").Server(app);
@@ -26,12 +29,26 @@ app.get("/:fileName", function (req, res) {
 	res.sendFile(__dirname + clientDir + "/" + req.params.fileName);
 });
 
+var externalIP = "";
+getIP(function (err, ip) {
+	if (err) {
+		throw err;
+	}
+	externalIP = ip;
+	console.log("The server's IP address is " + externalIP);
+})
+
 // An array of active room IDs
 var activeRooms = [];
 
-app.get("/room/:roomID", function (req, res) {
-	if (activeRooms.indexOf(req.params.roomID) > -1) {
-		res.sendFile(__dirname + clientDir + "/testNamespaces.html");
+app.get("/room/:userType/:roomID", function (req, res) {
+	if (activeRooms.indexOf(req.params.roomID) > -1 && req.params.userType === "p") {
+		// A presenter has logged in
+		res.sendFile(__dirname + clientDir + "/presentroom.html");
+	}
+	else if (activeRooms.indexOf(req.params.roomID) > -1 && req.params.userType === "a") {
+		// An attendee has logged in
+		res.sendFile(__dirname + clientDir + "/presentroom.html");
 	}
 	else {
 		res.send("<h1>Room Not Found</h1>");
@@ -110,7 +127,7 @@ io.on("connection", function(socket) {
 			} 
 			else if (bucketFails > 0) {
 				// Bucket was created successfully, emit event to socket to signal success
-				socket.emit("complete-bucket", {err: err, data: data});
+				socket.emit("complete-bucket", {err: err, data: data, roomID: roomID});
 
 				if (file != false) {
 					// Upload the file in the bucket.
@@ -120,7 +137,7 @@ io.on("connection", function(socket) {
 				// Continue with creating the room
 				aws.addRoomToDB(roomName, roomID, addToDBCallback);
 
-				aws.sendEmail(emails, instructor, awsFeedback);
+				aws.sendEmail(emails, instructor, roomID, awsFeedback, externalIP);
 
 				// Add the newly created room's ID to the list of active rooms
 				activeRooms.push(roomID);
@@ -147,8 +164,7 @@ io.on("connection", function(socket) {
 	});
 
 	socket.on("resend-email", function(data) {
-        instructor = data.instructorName;
-		aws.sendEmail(data.emails, instructor, awsFeedback);
+		aws.sendEmail(data.emails, data.instructorName, data.roomID, awsFeedback, externalIP);
 	});
     
     // Listen for delete-room event, which is called when the instructor leaves the room
