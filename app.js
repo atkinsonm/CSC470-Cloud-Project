@@ -5,30 +5,28 @@ var bodyParser = require("body-parser"),
 	validator = require("./validator.js"),
 	getIP = require('external-ip')();
 
+// Sets up express server to accept HTTP 
 var app = require("express")();
 var http = require("http").Server(app);
 var io = require('socket.io')(http);
 
 var clientDir = "/public"
 
-// Allows server to read variables submitted in HTTP request
-//app.use(bodyParser.json());
-
-// Fetches content from the public directory and serves it to the requester
-//app.use(express.static("public"));
-
 http.listen(3000, function() {
 	console.log("HTTP server listening on port 3000");
 });
 
+// Serve up the index.html file as the home page
 app.get("/", function (req, res) {
 	res.sendFile(__dirname + clientDir + '/index.html');
 });
 
+// Serve up all other files through the public directory
 app.get("/:fileName", function (req, res) {
 	res.sendFile(__dirname + clientDir + "/" + req.params.fileName);
 });
 
+// Get the public IP address of the Node server
 var externalIP = "";
 getIP(function (err, ip) {
 	if (err) {
@@ -41,7 +39,10 @@ getIP(function (err, ip) {
 // An array of active room IDs
 var activeRooms = [];
 
+// This route takes the user to the room
 app.get("/room/:userType/:roomID", function (req, res) {
+
+	// The user type is p if the user is a presenter or a if the user is an attendee
 	if (activeRooms.indexOf(req.params.roomID) > -1 && req.params.userType === "p") {
 		// A presenter has logged in
 		res.sendFile(__dirname + clientDir + "/presentroom.html");
@@ -56,8 +57,6 @@ app.get("/room/:userType/:roomID", function (req, res) {
 });
 
 io.on("connection", function(socket) {
-
-	console.log("A user connected");
 
     // Declare these globally so they can be used by the create-room and resend-email listeners
     var instructor;
