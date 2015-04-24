@@ -10,8 +10,6 @@ function b64_to_utf8(str) {
 
 $(document).ready(function() {
 
-	var socketIOFileName = document.documentURI + "socket.io/socket.io.js";
-
 	var socket = io();
 
 	$('#roomcreateform').submit(function(e) {
@@ -66,6 +64,11 @@ $(document).ready(function() {
 		}
 	});
 
+	var bucketComplete = false;
+	var dynamoComplete = false;
+	var emailComplete = false;
+	var roomID;
+
 	$("#retryemail").on("click", function(){
 
 		// Create an array of email addresses from input string
@@ -79,7 +82,8 @@ $(document).ready(function() {
 		var inputData = {
 			instructorName: $('#instructornameinput').val(),
 			roomName: $('#roomnameinput').val(),
-			emails: emails
+			emails: emails,
+			roomID: roomID
 		};
 
 		$("#sendingemails").text("Attempting to resend emails...");
@@ -97,7 +101,11 @@ $(document).ready(function() {
 			$("#creatingbucket").text("Bucket created successfully!");
 			$("#addingdbitem").removeClass("hide");
 			$("#sendingemails").removeClass("hide");
+			bucketComplete = true;
+			roomID = response.roomID;
 		}
+
+		checkForRoomCompletion();
 
 	});
 
@@ -106,8 +114,12 @@ $(document).ready(function() {
 		if (response.err) {
 			$("#addingdbitem").text("Error creating dynamo entry - could not create room. Try again later");
 		}
-		else
+		else {
 			$("#addingdbitem").text("Dynamo entry created successfully!");
+			dynamoComplete = true;
+		}
+
+		checkForRoomCompletion();
 
 	});
 
@@ -119,8 +131,26 @@ $(document).ready(function() {
 			emailLabel.text("Error sending emails: ensure you have typed in emails correctly");
 			$("#retryemail").removeClass("hide");
 		}
-		else
+		else {
 			emailLabel.text("Successfully sent emails!");
+			emailComplete = true;
+		}
 
+		checkForRoomCompletion();
+
+	});
+
+	function checkForRoomCompletion() {
+		if (bucketComplete && dynamoComplete && emailComplete) {
+			$("#retryemail").addClass("hide");
+			$("#room-complete-notice").removeClass("hide");
+			$("#instructor-enter-room").attr("href", "/room/p/" + roomID);
+			$("#instructor-enter-room").removeClass("hide");
+		}
+	}
+
+	$('#roomjoinform').submit(function(e) {
+		e.preventDefault();
+		window.location.href = "/room/a/" + $("#roomnameattendeeinput").val();
 	});
 });

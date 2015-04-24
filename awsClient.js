@@ -1,5 +1,6 @@
 var AWS = require('aws-sdk'),
     fs = require('fs'),
+    dataUriToBuffer = require('data-uri-to-buffer'),
     Files = {};
 
 // Set the region for the AWS services - required for DynamoDB
@@ -123,34 +124,33 @@ exports.randID = function(sendTo, instructor)
     return text;
 }
 
-exports.sendEmail = function(sendTo, instructor, callback) {
+exports.sendEmail = function(sendTo, instructor, roomID, callback, externalIP) {
     var charset = "utf-8";
 
     console.log(sendTo);
 
     var params = {
-      Destination: { /* required */
+      Destination: {
         ToAddresses: ['davincinode@gmail.com'],
         BccAddresses: sendTo
       },
-      Message: { /* required */
-        Body: { /* required */
+      Message: {
+        Body: {
           Html: {
-            Data: instructor + ' invited you to a conference. Click this link to access the conference', /* required */
+            Data: instructor + ' invited you to a workshop. Your workshop ID number is ' + roomID + '. Click this link to join the room http://' + externalIP + ':3000/room/a/' + roomID,
             Charset: charset
           },
           Text: {
-            Data: instructor + ' invited you to a conference. Click this link to access the conference', /* required */
+            Data: instructor + ' invited you to a workshop. Your workshop ID number is ' + roomID + '. Click this link to join the room http://' + externalIP + ':3000/room/a/' + roomID,
             Charset: charset
           }
         },
-        Subject: { /* required */
-          Data: 'You\'ve been invited to join a conference!', /* required */
+        Subject: {
+          Data: 'You\'ve been invited to join a workshop!',
           Charset: charset
         }
       },
-      Source: 'davincinode@gmail.com', /* required */
-      //ReplyToAddresses: '',
+      Source: 'davincinode@gmail.com',
       ReturnPath: 'davincinode@gmail.com'
     };
 
@@ -168,13 +168,13 @@ exports.uploadFileToS3Bucket = function(roomID, file)
 {
   var bucketName = 'tcnj-csc470-nodejs-' + roomID;
   var fileName = file['name'] + '.' + file['extension'];
-  var file = this.decodeDataURL(file['data']);
+  var file = dataUriToBuffer(file['data']);
   
   var params = {
       Bucket: bucketName,
       Key: fileName,
       ACL: 'public-read',
-      Body: file.data,
+      Body: file,
       ContentType: file.type
 
   };
