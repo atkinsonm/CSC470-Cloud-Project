@@ -1,39 +1,62 @@
-var bodyParser = require("body-parser"),
-	aws = require("./awsClient.js")
-	validator = require("./validator.js");
+'use strict';
 
+var bodyParser = require("body-parser"),
+	aws = require("./awsClient.js"),
+	validator = require("./validator.js"),
+	getIP = require('external-ip')();
+
+// Sets up express server to accept HTTP 
 var app = require("express")();
 var http = require("http").Server(app);
 var io = require('socket.io')(http);
 
 var clientDir = "/public"
 
-// Allows server to read variables submitted in HTTP request
-//app.use(bodyParser.json());
-
-// Fetches content from the public directory and serves it to the requester
-//app.use(express.static("public"));
-
 http.listen(3000, function() {
 	console.log("HTTP server listening on port 3000");
 });
 
-app.get('/', function (req, res) {
+// Serve up the index.html file as the home page
+app.get("/", function (req, res) {
 	res.sendFile(__dirname + clientDir + '/index.html');
 });
 
-app.get("/:fileName", function(req, res) {
+// Serve up all other files through the public directory
+app.get("/:fileName", function (req, res) {
 	res.sendFile(__dirname + clientDir + "/" + req.params.fileName);
 });
 
-/*app.use(function (req, res) { 
-	// If the public folder cannot satisfy the request, this function runs
-	res.end("Invalid request: page not found");
-});*/
+// Get the public IP address of the Node server
+var externalIP = "";
+getIP(function (err, ip) {
+	if (err) {
+		throw err;
+	}
+	externalIP = ip;
+	console.log("The server's IP address is " + externalIP);
+});
+
+// An array of active room IDs
+var activeRooms = [];
+
+// This route takes the user to the room
+app.get("/room/:userType/:roomID", function (req, res) {
+
+	// The user type is p if the user is a presenter or a if the user is an attendee
+	if (activeRooms.indexOf(req.params.roomID) > -1 && req.params.userType === "p") {
+		// A presenter has logged in
+		res.sendFile(__dirname + clientDir + "/presentroom.html");
+	}
+	else if (activeRooms.indexOf(req.params.roomID) > -1 && req.params.userType === "a") {
+		// An attendee has logged in
+		res.sendFile(__dirname + clientDir + "/presentroom.html");
+	}
+	else {
+		res.send("<h1>Room Not Found</h1>");
+	}
+});
 
 io.on("connection", function(socket) {
-
-	console.log("a user connected");
 
     // Declare these globally so they can be used by the create-room and resend-email listeners
     var instructor;
@@ -53,26 +76,17 @@ io.on("connection", function(socket) {
         var roomName = data.roomName;
         // Create random ID
         var roomID = aws.randID();
+        
         instructor = data.instructorName;
         emails = data.emails;
-
-		var roomName = data.roomName;
-		// Generate a random ID
-		var roomID = aws.randID();
 
         // Populate email addresses from form data and send message to recipients
         var emailExists = true;
         emails = data.emails;
 
-        if (emails.length >= 1 && emails[0] != '') { 
-            console.log("Invitees:");
-            for (var i = 0; i < emails.length; i++) {
-                console.log("\t" + emails[i]);
-            } 
-        } else { console.log("No invitees."); emailExists=false; }
-
         // Validate the upload file.
         var file = validator.validateFile(data.file);
+
         if (file == false) {
         	console.log("No file uploaded.");
         }
@@ -109,15 +123,20 @@ io.on("connection", function(socket) {
 			} 
 			else if (bucketFails > 0) {
 				// Bucket was created successfully, emit event to socket to signal success
-				socket.emit("complete-bucket", {err: err, data: data});
+				socket.emit("complete-bucket", {err: err, data: data, roomID: roomID});
 
-				// Upload the file in the bucket.
-				aws.uploadFileToS3Bucket(roomID, file);
+				if (file != false) {
+					// Upload the file in the bucket.
+					aws.uploadFileToS3Bucket(roomID, file);
+				}
 	
 				// Continue with creating the room
 				aws.addRoomToDB(roomName, roomID, addToDBCallback);
 
-				aws.sendEmail(emails, instructor, awsFeedback);
+				aws.sendEmail(emails, instructor, roomID, awsFeedback, externalIP);
+
+				// Add the newly created room's ID to the list of active rooms
+				activeRooms.push(roomID);
 			}
 			else
 				socket.emit("complete-bucket", {err: err, data: data});
@@ -141,8 +160,16 @@ io.on("connection", function(socket) {
 	});
 
 	socket.on("resend-email", function(data) {
-        instructor = data.instructorName;
-		aws.sendEmail(data.emails, instructor, awsFeedback);
+		aws.sendEmail(data.emails, data.instructorName, data.roomID, awsFeedback, externalIP);
+	});
+
+
+	socket.on("add-to-room", function(data) {
+		var roomID = data.roomID;
+		socket.room = roomID;
+		console.log("A new user entered the room " + roomID);
+		socket.join(roomID);
+		socket.broadcast.to(roomID).emit("update", {message: "A new user has connected"});
 	});
     
     // Listen for delete-room event, which is called when the instructor leaves the room
