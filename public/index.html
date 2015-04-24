@@ -11,6 +11,103 @@
 
 	<style type="text/css">
 		div#title{
+<<<<<<< HEAD
+			font-family: "Arial";
+			font-size: 30px;
+			color: #D3D3D3;
+			text-align: center;
+			padding-top: 15px;
+			text-shadow: 1px 1px 1px #444;
+			font-weight: bold;
+		}
+		body {
+		  	
+			background-color: #7C302C;
+		}
+		form{
+			margin-left: auto;
+		    margin-right: auto;
+		    margin-bottom: 10px;
+		    max-width: 500px;
+		    background: #555;
+		    padding: 20px 30px 20px 30px;
+		    font: 12px "Helvetica Neue", Helvetica, Arial, sans-serif;
+		    color: #D3D3D3;
+		    text-shadow: 1px 1px 1px #444;
+		    border: none;
+		    border-radius: 5px;
+		    -webkit-border-radius: 5px;
+    		-moz-border-radius: 5px;
+		}
+		h3 {
+		    padding: 0px 0px 10px 40px;
+		    display: block;
+		    border-bottom: 1px solid #444;
+		    margin: 5px -30px 30px -30px;
+		}
+		h3>span {
+		    display: block;
+		    font-size: 11px;
+		}
+		input[type="text"], input[type="email"], textarea{
+		    border: none;
+		    color: #525252;
+		    height: 25px;
+		    line-height:15px;
+		    margin-bottom: 16px;
+		    margin-right: 6px;
+		    margin-top: 2px;
+		    outline: 0 none;
+		    padding: 5px 0px 5px 5px;
+		    width: 70%;
+		    border-radius: 2px;
+		    -webkit-border-radius: 2px;
+		    -moz-border-radius: 2px;
+		    -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+		    background: #DFDFDF;
+		}
+		textarea{
+		    height:100px;
+		    padding: 5px 0px 0px 5px;
+		    width: 70%;
+		}
+
+		label {
+    		display: block;
+   			margin: 0px 0px 5px;
+		}
+		label>span {
+		    float: top;
+		    width: 20%;
+		    text-align: right;
+		    padding-right: 10px;
+		    margin-top: 10px;
+		    font-weight: bold;
+		}
+		.btn{
+ 			background: #FFCC02;
+   			border: none;
+    		padding: 10px 25px 10px 25px;
+		    color: #585858;
+		    border-radius: 4px;
+		    -moz-border-radius: 4px;
+		    -webkit-border-radius: 4px;
+		    text-shadow: 1px 1px 1px #FFE477;
+		    font-weight: bold;
+		    box-shadow: 1px 1px 1px #3D3D3D;
+		    -webkit-box-shadow:1px 1px 1px #3D3D3D;
+		    -moz-box-shadow:1px 1px 1px #3D3D3D;
+		}
+
+		.btn:hover{
+  			color: #333;
+    		background-color: #EBEBEB;
+		}
+	</style>
+	
+	<title>The Node Less Traveled</title>
+
+=======
 			font-family: "Times New Roman";
 			font-size: 30px;
 			text-align: center;
@@ -37,11 +134,36 @@
 	
 	<title>The Node Less Traveled</title>
 
+>>>>>>> master
 </head>	
 <body>
 	<div class ="col-xs-12 col-md-12" id = "title">Welcome to PROJECT NAME</div>
 		<div class = "col-xs-12 col-md-5 col-md-offset-1">
 			<form id="roomcreateform">
+<<<<<<< HEAD
+					<h3>Create A Room!</h3>
+					<label>
+						<span>Enter your name: </span><br>
+						<input type = "text" id = "instructornameinput" required>
+					</label>
+					<br>
+					<label>
+						<span>Enter your room name:</span> 
+						<input type = "text" id = "roomnameinput" required>
+					</label>
+					<br>
+					<label>
+						<span>Would you like to send emails to your <br>
+						attendees telling them the room name?<br> Seperate them by commas:</span>
+						<textarea type = "email" id="emailsinput" ROWS=3 COLS=30 ></textarea>
+					</label>
+					<br>
+					<label>
+					<span>Please upload your presentation:</span>
+					<input type = "file" id = "presentationfile"><br><br>
+					</label>
+					<input class="btn btn-default" type = "submit" id = "createsubmit" value = "Submit">
+=======
 				<p>Create A Room!</p>
 				<p>Enter your name: </p>
 				<input type = "text" id = "instructornameinput" required>
@@ -53,10 +175,25 @@
 				<p>Please upload your presentation:</p>
 				<input type = "file" id = "presentationfile"><br><br>
 				<input type = "submit" id = "createsubmit" value = "Submit">
+>>>>>>> master
 			</form>
 		</div>
 		<div class="col-xs-12 col-md-5">
 			<form id="roomjoinform">
+<<<<<<< HEAD
+				<h3>Join A Room!</h3>
+				<label>
+					<span>Enter your name: </span><br>
+					<input type = "text" id = "attendeenameinput" required>
+				</label>
+				<br>
+				<label>
+					<span>Enter your room name: </span>
+					<input type = "text" id = "roomnameattendeeinput" required>
+				</label>
+				<br><br>
+				<input class="btn btn-default" type = "submit" id = "joinsubmit" value = "Submit">
+=======
 				<p>Join A Room!</p>
 				<p>Enter your name: </p>
 				<input type = "text" id = "attendeenameinput" required>
@@ -65,6 +202,7 @@
 				<input type = "text" id = "roomnameattendeeinput" required>
 				<br><br>
 				<input type = "submit" id = "joinsubmit" value = "Submit">
+>>>>>>> master
 				<br>
 			</form>
 		</div>
@@ -79,4 +217,8 @@
 	<script src="./socket.io/socket.io.js"></script>
 	<script type="text/javascript" src="./createroom.js"></script>
 </body>	
+<<<<<<< HEAD
 </html>
+=======
+</html>
+>>>>>>> master
