@@ -11,6 +11,7 @@
 
 	<style type="text/css">
 		div#title{
+<<<<<<< HEAD
 			font-family: "Arial";
 			font-size: 30px;
 			color: #D3D3D3;
@@ -106,11 +107,40 @@
 	
 	<title>The Node Less Traveled</title>
 
+=======
+			font-family: "Times New Roman";
+			font-size: 30px;
+			text-align: center;
+			padding-top: 15px;
+		}
+		body {
+		  background-color: #d0e4fe;
+
+		}
+		p{
+			font-family: "Times New Roman";
+			font-size: 20px;
+		}
+		form{
+			margin-top: 30px;
+			height: auto;
+			border: 1px solid #999;
+			overflow: auto;
+			padding: 10px;
+			width: 100%;
+			position: relative;
+		}
+	</style>
+	
+	<title>The Node Less Traveled</title>
+
+>>>>>>> master
 </head>	
 <body>
 	<div class ="col-xs-12 col-md-12" id = "title">Welcome to PROJECT NAME</div>
 		<div class = "col-xs-12 col-md-5 col-md-offset-1">
 			<form id="roomcreateform">
+<<<<<<< HEAD
 					<h3>Create A Room!</h3>
 					<label>
 						<span>Enter your name: </span><br>
@@ -133,10 +163,24 @@
 					<input type = "file" id = "presentationfile"><br><br>
 					</label>
 					<input class="btn btn-default" type = "submit" id = "createsubmit" value = "Submit">
+=======
+				<p>Create A Room!</p>
+				<p>Enter your name: </p>
+				<input type = "text" id = "instructornameinput" required>
+				<p>Enter your room name:</p> 
+				<input type = "text" id = "roomnameinput" required>
+				<p>Would you like to send emails to your <br>
+				attendees telling them the room name?<br> Seperate them by commas:</p>
+				<textarea type = "email" id="emailsinput" ROWS=3 COLS=30 ></textarea>
+				<p>Please upload your presentation:</p>
+				<input type = "file" id = "presentationfile"><br><br>
+				<input type = "submit" id = "createsubmit" value = "Submit">
+>>>>>>> master
 			</form>
 		</div>
 		<div class="col-xs-12 col-md-5">
 			<form id="roomjoinform">
+<<<<<<< HEAD
 				<h3>Join A Room!</h3>
 				<label>
 					<span>Enter your name: </span><br>
@@ -149,6 +193,16 @@
 				</label>
 				<br><br>
 				<input class="btn btn-default" type = "submit" id = "joinsubmit" value = "Submit">
+=======
+				<p>Join A Room!</p>
+				<p>Enter your name: </p>
+				<input type = "text" id = "attendeenameinput" required>
+				<br>
+				<p>Enter your room name: </p>
+				<input type = "text" id = "roomnameattendeeinput" required>
+				<br><br>
+				<input type = "submit" id = "joinsubmit" value = "Submit">
+>>>>>>> master
 				<br>
 			</form>
 		</div>
@@ -163,4 +217,8 @@
 	<script src="./socket.io/socket.io.js"></script>
 	<script type="text/javascript" src="./createroom.js"></script>
 </body>	
+<<<<<<< HEAD
 </html>
+=======
+</html>
+>>>>>>> master
