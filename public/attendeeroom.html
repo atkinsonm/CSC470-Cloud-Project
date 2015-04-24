@@ -18,7 +18,6 @@
 
 		<style type="text/css">
 			div#title{
-				margin-left: 10px;
 				font-family: "Arial";
 				font-size: 30px;
 				color: #D3D3D3;
@@ -32,16 +31,15 @@
 				background-color: #7C302C;
 			}
 			div#presentation{
-				margin-left: 20px;
+
+				margin-left: auto;
 			    margin-right: auto;
 			    margin-bottom: 10px;
 			    background: #555;
-			    padding: 20px 30px 20px 30px;
+			    padding: 20px 5px 20px 30px;
 			    color: #D3D3D3;
 			    border: none;
 			    border-radius: 5px;
-			    -webkit-border-radius: 5px;
-	    		-moz-border-radius: 5px;
 
 			}
 			div#attendees{
@@ -62,8 +60,7 @@
 			    border-radius: 5px;
 			}
 			div#chatroom {
-				margin-left: auto;
-			    margin-right: auto;
+				margin-right: auto;
 			    margin-bottom: 10px;
 			    max-width: 100%;
 			    height: 250px;
@@ -103,7 +100,6 @@
 			    background: #DFDFDF;
 			}
 			.btn{
-				float: right;
 				margin-top: 10px;
 				width: auto;
 				margin-bottom: 5px;
@@ -128,8 +124,17 @@
 	    		background-color: #EBEBEB;
 			}
 			#raisehand{
+				margin-right: 5px;
 				height: 45px;
     			width: 45px;
+			}
+			#attendeeslist{
+				list-style-type: none;
+    			padding: 0px;
+    			margin: 0px;
+			}
+			#buttoncontainer{
+				
 			}
 		</style>
 
@@ -141,13 +146,12 @@
 	<body>
 		<div class = "row">
 			<div class ="col-xs-12 col-md-7" id = "title">Welcome To ROOM NAME</div>
-			<div class ="col-xs-6 col-md-2"><input type="image" src="img/hand.png" id = "raisehand" class = "btn btn-default"></input></div>
-			<div class ="col-xs-6 col-md-2"><button class = "btn btn-default" id = "leavebutton">LEAVE ROOM</button></div>
+			<div class ="col-xs-8 col-xs-offset-3 col-md-2 col-md-offset-2" ><input type="image" src="img/hand.png" id = "raisehand" class = "btn btn-default"></input><button class = "btn btn-default" id = "leavebutton">LEAVE ROOM</button></div>
 			
 		</div>
 		<div class="row">
-			<div class="col-xs-12 col-md-9" id ="presentation">PRESENTATION GO HERE</div>
-  			<div class="col-xs-12 col-md-2"><div id = "attendees">CLASS LIST GOES HERE</div>
+			<div class="col-xs-12 col-md-9 col-md-offset-1" id ="presentation">PRESENTATION GO HERE</div>
+  			<div class="col-xs-12 col-md-2 "><div id = "attendees"><ul id="attendeeslist">CLASS LIST GOES HERE</ul></div>
   				<div id="chatroom">
 					<ul id="chat_log"></ul>
 				</div>
