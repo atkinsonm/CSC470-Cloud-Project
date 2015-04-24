@@ -45,11 +45,11 @@ app.get("/room/:userType/:roomID", function (req, res) {
 	// The user type is p if the user is a presenter or a if the user is an attendee
 	if (activeRooms.indexOf(req.params.roomID) > -1 && req.params.userType === "p") {
 		// A presenter has logged in
-		res.sendFile(__dirname + clientDir + "/presentroom.html");
+		res.sendFile(__dirname + clientDir + "/presenterroom.html");
 	}
 	else if (activeRooms.indexOf(req.params.roomID) > -1 && req.params.userType === "a") {
 		// An attendee has logged in
-		res.sendFile(__dirname + clientDir + "/presentroom.html");
+		res.sendFile(__dirname + clientDir + "/presenterroom.html");
 	}
 	else {
 		res.send("<h1>Room Not Found</h1>");
