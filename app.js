@@ -210,6 +210,21 @@ io.on("connection", function(socket) {
         aws.deleteRoomFromDB(roomName, roomID, deleteFromDBCallback);       
         
     });
+	
+	// Listen for a chat message and broadcast for all users in the room.
+	socket.on("chat-send-message", function(data) {
+		var roomID = data.roomID;
+
+		socket.room = roomID;
+		socket.join(roomID);
+
+		console.log('Chat message received on room: ' + roomID);
+
+		// broadcasting the message.
+		socket.broadcast.to(roomID).emit("chat-receive-message", data);
+
+
+	});
 
 });
 
