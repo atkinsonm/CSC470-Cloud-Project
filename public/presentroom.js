@@ -1,5 +1,4 @@
 function addMessageChatHistory (username, message) {
-
 	$("#chatroom").append($('<p>').text(message).prepend($('<strong>').text(username+': ')));
 }
 
