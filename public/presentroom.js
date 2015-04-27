@@ -26,11 +26,10 @@ $(document).ready(function() {
 	});
 
 	socket.on("chat-receive-message", function (data) {
-		console.log("Message received");
-		console.log(data);
-		//addMessageChatHistory(data.message);
+		addMessageChatHistory(data.userID, data.message);
 	});
 
+	// adding a keypress event handler on chat textbox.
 	$("#chat_box").keypress(function (e) {
 
 		// check if user type enter.
@@ -42,11 +41,15 @@ $(document).ready(function() {
 			// getting the message from the text box.
 			var data = {
 				"roomID" : roomID,
+				"userID" : socket.id,
 				"message" : $("#chat_box").val()
 			};			
 
 			// emmit the message
 			socket.emit("chat-send-message", data);
+
+			// upload the message for the user that send the message.
+			addMessageChatHistory(socket.id, data.message);
 			
 			// cleaning the message text box.
 			$("#chat_box").val("");
