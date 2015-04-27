@@ -49,7 +49,7 @@ $(document).ready(function() {
 			socket.emit("chat-send-message", data);
 
 			// upload the message for the user that send the message.
-			addMessageChatHistory(socket.id, data.message);
+			//addMessageChatHistory(socket.id, data.message);
 			
 			// cleaning the message text box.
 			$("#chat_box").val("");

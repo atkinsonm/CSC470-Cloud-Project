@@ -215,15 +215,10 @@ io.on("connection", function(socket) {
 	socket.on("chat-send-message", function(data) {
 		var roomID = data.roomID;
 
-		socket.room = roomID;
-		socket.join(roomID);
-
 		console.log('Chat message received on room: ' + roomID);
 
 		// broadcasting the message.
-		socket.broadcast.to(roomID).emit("chat-receive-message", data);
-
-
+		io.in(roomID).emit("chat-receive-message", data);
 	});
 });
 
