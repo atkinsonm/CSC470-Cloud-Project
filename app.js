@@ -223,7 +223,16 @@ io.on("connection", function(socket) {
         aws.deleteRoomFromDB(roomName, roomID, deleteFromDBCallback);       
         
     });
+	
+	// Listen for a chat message and broadcast for all users in the room.
+	socket.on("chat-send-message", function(data) {
+		var roomID = data.roomID;
 
+		console.log('Chat message received on room: ' + roomID);
+
+		// broadcasting the message.
+		io.in(roomID).emit("chat-receive-message", data);
+	});
 });
 
 function Room(id, name) {
