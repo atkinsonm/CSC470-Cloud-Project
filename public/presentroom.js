@@ -4,20 +4,26 @@ $(document).ready(function() {
 	var urlTokens = document.URL.split("/");
 	var roomID = urlTokens.pop();
 	var userType = urlTokens.pop();
-	var userTypeStr;
+	var userIsPresenter;
 
 	if (userType === "p") 
-		userTypeStr = "presenter";
+		userIsPresenter = true;
 	else
-		userTypeStr = "attendee";
+		userIsPresenter = false;
 
 	$("#title").text("Welcome to room " + roomID);
+
+	var username;
 	
 	socket.on("connect", function () {
-		socket.emit("add-to-room", {roomID: roomID});
+		username = prompt("Enter your name to join the room");
+		socket.emit("add-to-room", {roomID: roomID, username: username, userIsPresenter: userIsPresenter});
 	});
 
 	socket.on("update", function (data) {
-		$("#attendees").append("<p>A new person has joined</p>");
+		$("#attendees").empty();
+		for (var i = 0; i < data.length; i++) {
+			$("#attendees").append("<p>" + data[i].name + " - " + ((data[i].isPresenter) ? "presenter" : "attendee") + "</p>");
+		}
 	});
 });
