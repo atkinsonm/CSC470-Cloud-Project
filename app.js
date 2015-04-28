@@ -39,15 +39,24 @@ getIP(function (err, ip) {
 // An array of active room IDs
 var activeRooms = [];
 
+// This function is called by the array of rooms - returns -1 if the room ID is not found - returns the index of the room in the array if the room ID is found
+Array.prototype.roomIndexByID = function(targetID) {
+	var resIndex = -1;
+	for (var i = 0; i < this.length; i++) {
+		if (targetID === this[i].id)
+			resIndex = i;
+	}
+	return resIndex;
+}
+
 // This route takes the user to the room
 app.get("/room/:userType/:roomID", function (req, res) {
-
 	// The user type is p if the user is a presenter or a if the user is an attendee
-	if (activeRooms.indexOf(req.params.roomID) > -1 && req.params.userType === "p") {
+	if (activeRooms.roomIndexByID(req.params.roomID) > -1 && req.params.userType === "p") {
 		// A presenter has logged in
 		res.sendFile(__dirname + clientDir + "/presentroom.html");
 	}
-	else if (activeRooms.indexOf(req.params.roomID) > -1 && req.params.userType === "a") {
+	else if (activeRooms.roomIndexByID(req.params.roomID) > -1 && req.params.userType === "a") {
 		// An attendee has logged in
 		res.sendFile(__dirname + clientDir + "/presentroom.html");
 	}
@@ -56,12 +65,9 @@ app.get("/room/:userType/:roomID", function (req, res) {
 	}
 });
 
+
 io.on("connection", function(socket) {
 
-    // Declare these globally so they can be used by the create-room and resend-email listeners
-    var instructor;
-    var emails;
-    
 	function awsFeedback(err, data, socketEvent) {
     	// Emits a socket event and passes the error and data objects that will come from the AWS service call
     	socket.emit(socketEvent, {err: err, data: data});
@@ -76,9 +82,9 @@ io.on("connection", function(socket) {
         var roomName = data.roomName;
         // Create random ID
         var roomID = aws.randID();
-        
-        instructor = data.instructorName;
-        emails = data.emails;
+
+        var instructor = data.instructorName;
+        var emails = data.emails;
 
         // Populate email addresses from form data and send message to recipients
         var emailExists = true;
@@ -136,7 +142,10 @@ io.on("connection", function(socket) {
 				aws.sendEmail(emails, instructor, roomID, awsFeedback, externalIP);
 
 				// Add the newly created room's ID to the list of active rooms
-				activeRooms.push(roomID);
+				//activeRooms.push(roomID);
+
+				var newRoom = new Room(roomID, roomName);
+				activeRooms.push(newRoom);
 			}
 			else
 				socket.emit("complete-bucket", {err: err, data: data});
@@ -160,16 +169,20 @@ io.on("connection", function(socket) {
 	});
 
 	socket.on("resend-email", function(data) {
+
 		aws.sendEmail(data.emails, data.instructorName, data.roomID, awsFeedback, externalIP);
 	});
 
 
 	socket.on("add-to-room", function(data) {
-		var roomID = data.roomID;
-		socket.room = roomID;
-		console.log("A new user entered the room " + roomID);
-		socket.join(roomID);
-		socket.broadcast.to(roomID).emit("update", {message: "A new user has connected"});
+		var user = new User(data.username, data.userIsPresenter);
+		console.log("A new " + ((user.isPresenter) ? "presenter" : "attendee") + " named " + user.name + " entered the room " + data.roomID);
+		socket.join(data.roomID);
+		var currentRoom = activeRooms[activeRooms.roomIndexByID(data.roomID)];
+		currentRoom.userList.push(user);
+		console.log("pushing update event to room " + data.roomID + " and user list " + currentRoom.userList);
+		// Emits event to all in the new user's room including the new user
+		io.in(data.roomID).emit("update", currentRoom.userList);
 	});
     
     // Listen for delete-room event, which is called when the instructor leaves the room
@@ -213,3 +226,13 @@ io.on("connection", function(socket) {
 
 });
 
+function Room(id, name) {
+	this.id = id;
+	this.name = name;
+	this.userList = [];
+}
+
+function User(name, isPresenter) {
+	this.name = name;
+	this.isPresenter = isPresenter;
+}
