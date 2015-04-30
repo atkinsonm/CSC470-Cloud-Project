@@ -10,6 +10,7 @@
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
 
 		<style type="text/css">
+
 			div#title{
 				font-family: "Arial";
 				font-size: 30px;
@@ -20,9 +21,11 @@
 				text-shadow: 1px 1px 1px #444;
 				font-weight: bold;
 			}
+
 			body {
 				background-color: #7C302C;
 			}
+
 			div#presentation{
 				margin-left: auto;
 			    margin-right: auto;
@@ -34,8 +37,8 @@
 			    border-radius: 5px;
 			    -webkit-border-radius: 5px;
 	    		-moz-border-radius: 5px;
-
 			}
+
 			div#attendees{
 				margin-left: auto;
 			    margin-right: auto;
@@ -53,6 +56,7 @@
 			    border: none;
 			    border-radius: 5px;
 			}
+
 			div#chatroom {
 				margin-right: auto;
 			    margin-bottom: 10px;
@@ -67,14 +71,6 @@
 			    line-height: 40px;
 			    border-radius: 5px;
 			    overflow: auto;
-			}
-
-			ul#chat_log {
-				list-style-position: inside;
-				position: relative;
-				bottom: 0px;
-				list-style-type: none;
-				float:bottom;
 			}
 
 			input#chat_box {
@@ -94,6 +90,7 @@
 			    -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
 			    background: #DFDFDF;
 			}
+
 			.btn{
 				margin-top: 10px;
 				width: auto;
@@ -112,22 +109,25 @@
 			    -webkit-box-shadow:1px 1px 1px #3D3D3D;
 			    -moz-box-shadow:1px 1px 1px #3D3D3D;
 			    background: #FFCC02;
-   			
 			}
+
 			.btn:hover{
 	  			color: #333;
 	    		background-color: #EBEBEB;
 			}
+
 			#raisehand{
 				margin-right: 5px;
 				height: 40px;
     			width: 45px;
 			}
+
 			#attendeeslist{
 				list-style-type: none;
     			padding: 0px;
     			margin: 0px;
 			}
+
 		</style>
 
 		<title>Room Name</title>
@@ -141,7 +141,7 @@
 			<div class ="col-xs-8 col-xs-offset-3 col-md-2 col-md-offset-2" ><button class = "btn btn-default" id = "closebutton">CLOSE ROOM</button></div>
 		</div>
 			<div class="col-xs-12 col-md-9 col-md-offset-1" id ="presentation">PRESENTATION GO HERE</div>
-  			<div class="col-xs-12 col-md-2 "><div id = "attendees"><ul id="attendeeslist">CLASS LIST GOES HERE</ul></div>
+  			<div class="col-xs-12 col-md-3 "><div id = "attendees"><ul id="attendeeslist">CLASS LIST GOES HERE</ul></div>
   				<div id="chatroom"></div>
 				<input type="text" name="chat_box" value="" id="chat_box" placeholder="type to chat..." />
 			</div>
