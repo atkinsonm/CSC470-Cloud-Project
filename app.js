@@ -183,6 +183,31 @@ io.on("connection", function(socket) {
 		console.log("pushing update event to room " + data.roomID + " and user list " + currentRoom.userList);
 		// Emits event to all in the new user's room including the new user
 		io.in(data.roomID).emit("update", currentRoom.userList);
+		var roomID = data.roomID;
+		
+		function listObjectsCallback(err, data) {
+			var files = new Array();
+			if (err) {
+				console.log("Error retrieving files.");
+			} else {
+				if (data.length > 1 || data[0] != null) {
+					console.log("Updating file list for room " + roomID);
+					for (var file in data) {
+						var name = data[file]["Key"];
+						var link = "http://s3.amazonaws.com/tcnj-csc470-nodejs-" + roomID + "/" + name;
+						if (name != null) files.push([name,link]);
+					}
+					console.log(files);
+					// Post the data to the GUI
+					socket.emit("update-file-list", {err: err, data: files});
+				} else {
+					console.log("No files found for room " + roomID);
+					socket.emit("updata-file-list", {err: err, data: "No files to view"});
+				}
+			}
+		}
+
+		aws.listObjects(roomID, listObjectsCallback);
 	});
     
     // Listen for delete-room event, which is called when the instructor leaves the room
