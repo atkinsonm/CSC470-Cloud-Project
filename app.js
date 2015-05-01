@@ -103,6 +103,9 @@ io.on("connection", function(socket) {
         // Countdown for number of DynamoDB add item fails
         var dynamoFails = 5;
 
+        // Countdown for number of Queue creation fails.
+        var queueFails = 5;
+
         // This function will be provided a boolean of whether or not a unique ID has been generated
 		function testIDCallback(result) {
 			if (result === false) {
@@ -139,6 +142,9 @@ io.on("connection", function(socket) {
 				// Continue with creating the room
 				aws.addRoomToDB(roomName, roomID, addToDBCallback);
 
+				// Continue with creating the chat queue
+				aws.createQueueSQS(roomID, createQueueCallback);
+
 				aws.sendEmail(emails, instructor, roomID, awsFeedback, externalIP);
 
 				// Add the newly created room's ID to the list of active rooms
@@ -161,6 +167,20 @@ io.on("connection", function(socket) {
 			}
 			else {
 				socket.emit("complete-db-add", {err: err, data: data});
+			}
+		}
+
+		function createQueueCallback(err, data) {
+			if (err && queueFails > 0) {
+				queueFails--;
+	
+                console.log("Retrying create a chat queue for " + roomName + " and " + roomID);
+				
+				// Retry the database add
+				aws.createQueueSQS(roomID, createQueueCallback);
+			}
+			else {
+				socket.emit("complete-queue-creation", {err: err, data: data});
 			}
 		}
 
@@ -248,6 +268,9 @@ io.on("connection", function(socket) {
 
 		// broadcasting the message.
 		io.in(roomID).emit("chat-receive-message", data);
+
+		// send the message to queue to store a chat history.
+		aws.sendMessageSQS(roomID, data);
 	});
 });
 

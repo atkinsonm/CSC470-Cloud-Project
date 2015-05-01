@@ -7,6 +7,7 @@ $(document).ready(function() {
 
 	var urlTokens = document.URL.split("/");
 	var roomID = urlTokens.pop();
+	var roomID = urlTokens.pop();
 	var userType = urlTokens.pop();
 	var userIsPresenter;
 
@@ -53,9 +54,6 @@ $(document).ready(function() {
 
 			// emmit the message
 			socket.emit("chat-send-message", data);
-
-			// upload the message for the user that send the message.
-			//addMessageChatHistory(socket.id, data.message);
 			
 			// cleaning the message text box.
 			$("#chat_box").val("");

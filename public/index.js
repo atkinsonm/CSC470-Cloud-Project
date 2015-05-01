@@ -66,6 +66,7 @@ $(document).ready(function() {
 
 	var bucketComplete = false;
 	var dynamoComplete = false;
+	var chatQueueComplete = false;
 	var emailComplete = false;
 	var roomID;
 
@@ -101,6 +102,7 @@ $(document).ready(function() {
 			$("#creatingbucket").text("Bucket created successfully!");
 			$("#addingdbitem").removeClass("hide");
 			$("#sendingemails").removeClass("hide");
+			$("#creatingchatqueue").removeClass("hide");
 			bucketComplete = true;
 			roomID = response.roomID;
 		}
@@ -117,6 +119,20 @@ $(document).ready(function() {
 		else {
 			$("#addingdbitem").text("Dynamo entry created successfully!");
 			dynamoComplete = true;
+		}
+
+		checkForRoomCompletion();
+
+	});
+
+	socket.on("complete-queue-creation", function(response) {
+
+		if (response.err) {
+			$("#creatingchatqueue").text("Error creating chat history - could not create queue. Try again later");
+		}
+		else {
+			$("#creatingchatqueue").text("Chat queue created successfully!");
+			chatQueueComplete = true;
 		}
 
 		checkForRoomCompletion();
@@ -141,7 +157,7 @@ $(document).ready(function() {
 	});
 
 	function checkForRoomCompletion() {
-		if (bucketComplete && dynamoComplete && emailComplete) {
+		if (bucketComplete && dynamoComplete && chatQueueComplete && emailComplete) {
 			$("#retryemail").addClass("hide");
 			$("#room-complete-notice").removeClass("hide");
 			$("#instructor-enter-room").attr("href", "/room/p/" + roomID);

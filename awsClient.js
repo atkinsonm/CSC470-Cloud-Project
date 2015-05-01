@@ -10,6 +10,7 @@ AWS.config.update({region: "us-east-1"});
 var s3 = new AWS.S3();
 var dynamodb = new AWS.DynamoDB();
 var ses = new AWS.SES();
+var sqs = new AWS.SQS();
 
 // Creates a new bucket for a room
 exports.createBucket = function(roomID, callback) {
@@ -191,17 +192,44 @@ exports.uploadFileToS3Bucket = function(roomID, file)
   });
 }
 
-// Decode a dataURL format for Blob files to array with file type and Base64 encode data.
-exports.decodeDataURL = function(dataString) {
-    var matches = dataString.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/),
-        response = {};
-    
-    if (matches.length !== 3) {
-        return new Error('Invalid input string');
+// Create a queue on SQS service.
+exports.createQueueSQS = function(roomID, callback) {
+
+  var name = 'tcnj-csc470-nodejs-' + roomID;
+
+  var params = {
+    QueueName: name, /* required */
+  };
+  
+  sqs.createQueue(params, function(err, data) {
+    if (err) {
+      console.log("Queue creation failed.");
+      console.log(err, err.stack); // an error occurred
+    }
+    else {
+      console.log(data); // successful response  
     }
 
-    response.type = matches[1];
-    response.data = new Buffer(matches[2], 'base64');
+    callback(err, data);
+  });
+}
 
-    return response;
+// Checks if a queue exist and send a message. Otherwise create the queue and send the message.
+exports.sendMessageSQS = function(roomID, messageObejct) {
+
+  var name = 'tcnj-csc470-nodejs-' + roomID;
+  
+  var params = {
+    QueueName: name, /* required */
+  };
+
+  sqs.getQueueUrl(params, function(err, data) {
+    if (err) {
+      console.log("Queue do not exist. Creating a new one.");
+      this.createQueueSQS(roomID); // creating a new queue.
+    }
+    else {
+      console.log(data);           // successful response
+    } 
+  });
 }
