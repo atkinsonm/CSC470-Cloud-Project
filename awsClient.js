@@ -11,6 +11,7 @@ var s3 = new AWS.S3();
 var dynamodb = new AWS.DynamoDB();
 var ses = new AWS.SES();
 var sqs = new AWS.SQS();
+var aws = this;
 
 // Creates a new bucket for a room
 exports.createBucket = function(roomID, callback) {
@@ -215,21 +216,56 @@ exports.createQueueSQS = function(roomID, callback) {
 }
 
 // Checks if a queue exist and send a message. Otherwise create the queue and send the message.
-exports.sendMessageSQS = function(roomID, messageObejct) {
+exports.logChatHistory = function(roomID, message) {
 
+  var queueURL;
+
+  function getQueueURLSQSCallback(err, data) {
+    if (!err) {
+      queueURL = data.QueueUrl;
+      aws.sendMessageSQS(queueURL, message);
+    }
+  }
+
+  // recovering the queue URL.
+  this.getQueueURLSQS(roomID, getQueueURLSQSCallback);
+}
+
+exports.getQueueURLSQS = function(roomID, callback) {
   var name = 'tcnj-csc470-nodejs-' + roomID;
   
   var params = {
     QueueName: name, /* required */
   };
 
+  var queueURL;
+
   sqs.getQueueUrl(params, function(err, data) {
     if (err) {
-      console.log("Queue do not exist. Creating a new one.");
-      this.createQueueSQS(roomID); // creating a new queue.
+      console.log("Queue do not exist");
     }
     else {
       console.log(data);           // successful response
     } 
+
+    callback(err, data);
+  });
+}
+
+
+exports.sendMessageSQS = function(queueURL, message) {
+  
+  var params = {
+    MessageBody: JSON.stringify(message), /* required */
+    QueueUrl: queueURL, /* required */
+    DelaySeconds: 0,
+  };
+
+  sqs.sendMessage(params, function(err, data) {
+    if (err) {
+      console.log("Message cannot be sent to queue.")
+      console.log(err, err.stack); // an error occurred
+    }
+    else     console.log(data);           // successful response
   });
 }

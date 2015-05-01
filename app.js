@@ -270,7 +270,7 @@ io.on("connection", function(socket) {
 		io.in(roomID).emit("chat-receive-message", data);
 
 		// send the message to queue to store a chat history.
-		aws.sendMessageSQS(roomID, data);
+		aws.logChatHistory(roomID, data);
 	});
 });
 

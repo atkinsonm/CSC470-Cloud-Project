@@ -7,7 +7,6 @@ $(document).ready(function() {
 
 	var urlTokens = document.URL.split("/");
 	var roomID = urlTokens.pop();
-	var roomID = urlTokens.pop();
 	var userType = urlTokens.pop();
 	var userIsPresenter;
 
