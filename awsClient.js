@@ -10,6 +10,9 @@ AWS.config.update({region: "us-east-1"});
 var s3 = new AWS.S3();
 var dynamodb = new AWS.DynamoDB();
 var ses = new AWS.SES();
+var sns = new AWS.SNS();
+
+
 
 // Creates a new bucket for a room
 exports.createBucket = function(roomID, callback) {
@@ -220,4 +223,17 @@ exports.decodeDataURL = function(dataString) {
     response.data = new Buffer(matches[2], 'base64');
 
     return response;
+}
+
+//Sends a message to the Admin to alert to the creation of the room
+exports.publish = function(){
+    var params = {
+    Message: 'A new room has been created.', /* required */
+    TopicArn: 'arn:aws:sns:us-east-1:479279233454:DaVinciNode'
+  };
+
+  sns.publish(params, function(err, data) {
+    if (err) console.log(err, err.stack); // an error occurred
+    else     console.log(data);           // successful response
+  });
 }

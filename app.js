@@ -141,6 +141,8 @@ io.on("connection", function(socket) {
 
 				aws.sendEmail(emails, instructor, roomID, awsFeedback, externalIP);
 
+				aws.publish;
+
 				// Add the newly created room's ID to the list of active rooms
 				//activeRooms.push(roomID);
 
