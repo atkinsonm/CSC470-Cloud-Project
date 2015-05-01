@@ -175,7 +175,7 @@ io.on("connection", function(socket) {
 
 
 	socket.on("add-to-room", function(data) {
-		var user = new User(data.username, data.userIsPresenter);
+		var user = new User(data.username, data.userIsPresenter, data.socketId);
 		console.log("A new " + ((user.isPresenter) ? "presenter" : "attendee") + " named " + user.name + " entered the room " + data.roomID);
 		socket.join(data.roomID);
 		var currentRoom = activeRooms[activeRooms.roomIndexByID(data.roomID)];
@@ -228,7 +228,23 @@ io.on("connection", function(socket) {
 	socket.on("chat-send-message", function(data) {
 		var roomID = data.roomID;
 
-		console.log('Chat message received on room: ' + roomID);
+		// getting the current users in the room.
+		var currentRoomUsers = activeRooms[activeRooms.roomIndexByID(roomID)].userList;
+
+		// recovering the user object.
+		var user;
+		for (var i = 0; i < currentRoomUsers.length; i++) {
+
+			if (currentRoomUsers[i].socketId == data.userID) {
+				user = currentRoomUsers[i];
+				break;
+			}
+		};
+
+		// adding the user object to the data object that will be send to client.
+		data.user = user;
+
+		console.log('User named ' + user.name + ' in the room' + roomID + ' sent a message on chat.');
 
 		// broadcasting the message.
 		io.in(roomID).emit("chat-receive-message", data);
@@ -241,7 +257,8 @@ function Room(id, name) {
 	this.userList = [];
 }
 
-function User(name, isPresenter) {
+function User(name, isPresenter, socketId) {
 	this.name = name;
 	this.isPresenter = isPresenter;
+	this.socketId = socketId;
 }
