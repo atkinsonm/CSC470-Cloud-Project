@@ -164,11 +164,13 @@ exports.sendEmail = function(sendTo, instructor, roomID, callback, externalIP) {
 
 
 // Save a temporarily file.
-exports.uploadFileToS3Bucket = function(roomID, file)
+exports.uploadFileToS3Bucket = function(roomID, file, isMain)
 {
   var bucketName = 'tcnj-csc470-nodejs-' + roomID;
   var fileName = file['name'] + '.' + file['extension'];
   var file = dataUriToBuffer(file['data']);
+	
+  isMain = typeof isMain !== 'undefined' ? isMain : false;
   
   var params = {
       Bucket: bucketName,
@@ -176,8 +178,13 @@ exports.uploadFileToS3Bucket = function(roomID, file)
       ACL: 'public-read',
       Body: file,
       ContentType: file.type
-
   };
+	
+  if (isMain) {
+	params.Metadata = {isMain: 'True', name: fileName}; 
+  } else {
+	params.Metadata = {isMain: 'False', name: fileName};  
+  }
 
   s3.putObject(params, function(err, data) {
     if (err) {
@@ -196,14 +203,27 @@ exports.listObjects = function(roomID, callback)
     var bucketName = 'tcnj-csc470-nodejs-' + roomID;
     
     var params = {
-      Bucket: bucketName, /* required */
-      Delimiter: ',',
-      EncodingType: 'url'
+      Bucket: bucketName /* required */
     };
     
     s3.listObjects(params, function(err, data) {
         if (err) console.log(err, err.stack); // an error occurred
         else  callback(err, data["Contents"]); // successful response
+    });
+}
+
+exports.headObject = function(roomID, key, callback)
+{
+	var bucketName = 'tcnj-csc470-nodejs-' + roomID;
+	
+	var params = {
+      Bucket: bucketName, /* required */
+	  Key: key  /* required */
+    };
+    
+    s3.headObject(params, function(err, data) {
+        if (err) console.log(err, err.stack); // an error occurred
+        else  callback(err, data["Metadata"]); // successful response
     });
 }
 
