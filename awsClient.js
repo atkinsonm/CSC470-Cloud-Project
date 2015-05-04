@@ -10,6 +10,9 @@ AWS.config.update({region: "us-east-1"});
 var s3 = new AWS.S3();
 var dynamodb = new AWS.DynamoDB();
 var ses = new AWS.SES();
+var sqs = new AWS.SQS();
+var aws = this;
+var sns = new AWS.SNS();
 
 // Creates a new bucket for a room
 exports.createBucket = function(roomID, callback) {
@@ -212,6 +215,7 @@ exports.listObjects = function(roomID, callback)
     });
 }
 
+
 exports.headObject = function(roomID, key, callback)
 {
 	var bucketName = 'tcnj-csc470-nodejs-' + roomID;
@@ -234,10 +238,136 @@ exports.decodeDataURL = function(dataString) {
     
     if (matches.length !== 3) {
         return new Error('Invalid input string');
+
+//Sends a message to the Admin to alert to the creation of the room
+exports.publish = function(activeRooms){
+    var params = {
+    Message: 'A new room has been created. The total number of rooms is' + activeRooms.length(), /* required */
+    TopicArn: 'arn:aws:sns:us-east-1:479279233454:DaVinciNode'
+  };
+
+  sns.publish(params, function(err, data) {
+    if (err) console.log(err, err.stack); // an error occurred
+    else     console.log(data);           // successful response
+  });
+}
+
+// Create a queue on SQS service.
+exports.createQueueSQS = function(roomID, callback) {
+
+  var name = 'tcnj-csc470-nodejs-' + roomID;
+
+  var params = {
+    QueueName: name, /* required */
+    Attributes: {
+      ReceiveMessageWaitTimeSeconds: '20',
+    },
+  };
+  
+  sqs.createQueue(params, function(err, data) {
+    if (err) {
+      console.log("Queue creation failed.");
+      console.log(err, err.stack); // an error occurred
+    }
+    else {
+      console.log(data); // successful response  
     }
 
-    response.type = matches[1];
-    response.data = new Buffer(matches[2], 'base64');
+    callback(err, data);
+  });
+}
 
-    return response;
+// log the chat history on a SQS queue of a specific room.
+exports.logChatHistory = function(roomID, message) {
+
+  var queueURL;
+
+  // callback for getQueueURLSQS.
+  function getQueueURLSQSCallback(err, data) {
+    if (!err) {
+      queueURL = data.QueueUrl;
+      aws.sendMessageSQS(queueURL, message);
+    }
+  }
+
+  // recovering the queue URL.
+  this.getQueueURLSQS(roomID, getQueueURLSQSCallback);
+}
+
+// recover the queue URL on SQS for a specific queue name.
+exports.getQueueURLSQS = function(roomID, callback) {
+  var name = 'tcnj-csc470-nodejs-' + roomID;
+  
+  var params = {
+    QueueName: name, /* required */
+  };
+
+  var queueURL;
+
+  sqs.getQueueUrl(params, function(err, data) {
+    if (err) {
+      console.log("Queue do not exist");
+    }
+    else {
+      console.log(data);           // successful response
+    } 
+
+    callback(err, data);
+  });
+}
+
+// send a new message to a queue on SQS.
+exports.sendMessageSQS = function(queueURL, message) {
+  
+  var params = {
+    MessageBody: JSON.stringify(message), /* required */
+    QueueUrl: queueURL, /* required */
+    DelaySeconds: 0,
+  };
+
+  sqs.sendMessage(params, function(err, data) {
+    if (err) {
+      console.log("Message cannot be sent to queue.")
+      console.log(err, err.stack); // an error occurred
+    }
+    else     console.log(data);           // successful response
+  });
+}
+
+// this function recover the room chat history from SQS.
+exports.recoverChatHistorySQS = function(roomID, callback) {
+
+  var queueURL;
+
+  // callback for getQueueURLSQS.
+  function getQueueURLSQSCallback(err, data) {
+    if (!err) {
+      queueURL = data.QueueUrl;
+      aws.receiveMessagesSQS(queueURL, callback);
+    }
+  }
+
+  // recovering the queue URL.
+  this.getQueueURLSQS(roomID, getQueueURLSQSCallback);
+}
+
+// recover all messages from a queue on SQS.
+exports.receiveMessagesSQS = function(queueURL, callback) {
+  
+  var params = {
+    QueueUrl: queueURL, /* required */
+    MaxNumberOfMessages: 10,
+    VisibilityTimeout: 0,
+    WaitTimeSeconds: 0,
+  };
+
+  sqs.receiveMessage(params, function(err, data) {
+    if (err) {
+      console.log("Messages cannot be recovered.")
+      console.log(err, err.stack); // an error occurred
+    }
+    else     console.log(data);           // successful response
+
+    callback(err, data);
+  });
 }

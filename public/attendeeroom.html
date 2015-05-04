@@ -9,13 +9,6 @@
 		<!-- Latest compiled and minified CSS -->
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
 
-
-
-		<!-- Latest compiled and minified JavaScript -->
-		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-		<script src="http://localhost:3000/socket.io/socket.io.js"></script>
-
 		<style type="text/css">
 
 			div#title{
@@ -34,7 +27,7 @@
 			}
 
 			div#presentation{
-
+				height: 550px;
 				margin-left: auto;
 			    margin-right: auto;
 			    margin-bottom: 10px;
@@ -70,12 +63,12 @@
 			    max-width: 100%;
 			    height: 250px;
 			    background: #555;
-			    padding: 5px 5px 5px 5px;
+			    padding: 5px 5px 1px 5px;
 			    font: 12px "Helvetica Neue", Helvetica, Arial, sans-serif;
 			    color: #D3D3D3;
 			    text-shadow: 1px 1px 1px #444;
 			    border: none;
-			    line-height: 40px;
+			    line-height: 15px;
 			    border-radius: 5px;
 			    overflow: auto;
 			}
@@ -136,6 +129,10 @@
     			margin: 0px;
 			}
 
+			.hand-raised {
+				background-color:blue;
+			}
+
 		</style>
 
 		<title>Room Name</title>
@@ -144,9 +141,8 @@
 
 	<body>
 		<div class = "row">
-			<div class ="col-xs-12 col-md-7" id = "title">Welcome To ROOM NAME</div>
-			<div class ="col-xs-8 col-xs-offset-3 col-md-2 col-md-offset-2" ><input type="image" src="img/hand.png" id = "raisehand" class = "btn btn-default"></input><button class = "btn btn-default" id = "leavebutton">LEAVE ROOM</button></div>
-			
+			<div class ="col-xs-12 col-md-7" id = "title"></div>
+			<div class ="col-xs-8 col-xs-offset-3 col-md-2 col-md-offset-2" ><input type="image" src="/img/hand.png" id = "raisehand" class = "btn btn-default"></input><button class = "btn btn-default" id = "leavebutton">LEAVE ROOM</button></div>	
 		</div>
 			<div class="col-xs-12 col-md-9 col-md-offset-1" id ="presentation">
 				<iframe id="presentationFile" style="display:block; width:100%; height:470px;" frameborder="0"></iframe>
@@ -156,5 +152,15 @@
 				<input type="text" name="chat_box" value="" id="chat_box" placeholder="type to chat..." />
 			</div>
 	
+			<div class="col-xs-12 col-md-9 col-md-offset-1" id ="presentation"></div>
+  			<div class="col-xs-12 col-md-3 "><div id = "attendees"><ul id="attendeeslist"></ul></div>
+  				<div id="chatroom"></div>
+				<input type="text" name="chat_box" value="" id="chat_box" placeholder="type to chat..." />
+			</div>
+
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+		<script src="/socket.io/socket.io.js"></script>
+		<script type="text/javascript" src="/presentroom.js"></script>
 	</body>
 </html>

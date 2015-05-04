@@ -1,33 +1,52 @@
-function addMessageChatHistory (username, message) {
-	$("#chatroom").append($('<p>').text(message).prepend($('<strong>').text(username+': ')));
+function addMessageChatHistory (username, isPresenter, message) {
+	$("#chatroom").append($('<p>').text(message).prepend($('<strong>').text(username+(isPresenter ? '(presenter)' : '') + ': ')));
 }
+
+var urlTokens = document.URL.split("/");
+var roomID = urlTokens.pop();
+var userType = urlTokens.pop();
+var userIsPresenter;
+
+if (userType === "p") 
+	userIsPresenter = true;
+else
+	userIsPresenter = false;
+
+var username = "Anonymous";
 
 $(document).ready(function() {
 	var socket = io();
 
-	var urlTokens = document.URL.split("/");
-	var roomID = urlTokens.pop();
-	var userType = urlTokens.pop();
-	var userIsPresenter;
-
-	if (userType === "p") 
-		userIsPresenter = true;
-	else
-		userIsPresenter = false;
-
-	$("#title").text("Welcome to room " + roomID);
-
-	var username;
+	$("#title").text("Loading room info...");
 	
 	socket.on("connect", function () {
-		username = prompt("Enter your name to join the room");
+		if (!userIsPresenter) {
+			username = prompt("Enter your name to join the room");
+			if (username === null)
+				username = "Anonymous";
+		}
+	});
+
+	socket.emit("req-room-info", {roomID: roomID});
+
+	socket.on("res-room-info", function(roomData) {
+		$("#title").text("Welcome to " + roomData.name);
+		if (userIsPresenter)
+			username = roomData.instructorName;
 		socket.emit("add-to-room", {roomID: roomID, username: username, userIsPresenter: userIsPresenter});
 	});
 
 	socket.on("update", function (data) {
 		$("#attendees").empty();
 		for (var i = 0; i < data.length; i++) {
-			$("#attendees").append("<p>" + data[i].name + " - " + ((data[i].isPresenter) ? "presenter" : "attendee") + "</p>");
+
+			var user = data[i];
+			var htmlStr = "<p>" + user.name + " - " + ((user.isPresenter) ? "presenter" : "attendee");
+
+			if (user.handRaised)
+				htmlStr = htmlStr + '<img src="/img/hand.png" height="32" width="32">';
+
+			$("#attendees").append(htmlStr + "</p>");
 		}
 	});
 	
@@ -49,8 +68,16 @@ $(document).ready(function() {
 		$("#presentation").append("<iframe id=\"presentationFile\" src=\"http://docs.google.com/gview?url=" + response.data + "&embedded=true\" style=\"display:block; width:100%; height:470px;\" frameborder=\"0\"></iframe>");
 	});
 
+	socket.on("chat-history", function(data){
+		if (data.messages) {
+			for (var i = 0; i < data.messages.length; i++) {
+				addMessageChatHistory(data.messages[i].username, data.messages[i].userIsPresenter, data.messages[i].message);
+			};
+		}
+	});
+
 	socket.on("chat-receive-message", function (data) {
-		addMessageChatHistory(data.userID, data.message);
+		addMessageChatHistory(data.username, data.userIsPresenter, data.message);
 	});
 
 	// adding a keypress event handler on chat textbox.
@@ -64,9 +91,10 @@ $(document).ready(function() {
 
 			// getting the message from the text box.
 			var data = {
-				"roomID" : roomID,
-				"userID" : socket.id,
-				"message" : $("#chat_box").val()
+				roomID : roomID,
+				username : username,
+				userIsPresenter : userIsPresenter,
+				message : $("#chat_box").val()
 			};			
 
 			// emmit the message
@@ -74,9 +102,15 @@ $(document).ready(function() {
 
 			// upload the message for the user that send the message.
 			//addMessageChatHistory(socket.id, data.message);
-			
+			var myDiv = document.getElementById("chatroom");
+			myDiv.scrollTop = myDiv.scrollHeight;
 			// cleaning the message text box.
 			$("#chat_box").val("");
 		}
+	});
+
+	$("#raisehand").on("click", function() {
+		socket.emit("toggle-hand", {roomID: roomID});
+		$(this).toggleClass("hand-raised");
 	});
 });
