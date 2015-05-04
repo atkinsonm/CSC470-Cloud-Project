@@ -95,7 +95,11 @@ $(document).ready(function() {
 
 			// emmit the message
 			socket.emit("chat-send-message", data);
-			
+
+			// upload the message for the user that send the message.
+			//addMessageChatHistory(socket.id, data.message);
+			var myDiv = document.getElementById("chatroom");
+			myDiv.scrollTop = myDiv.scrollHeight;
 			// cleaning the message text box.
 			$("#chat_box").val("");
 		}
