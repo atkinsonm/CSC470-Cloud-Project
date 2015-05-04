@@ -12,6 +12,7 @@ var dynamodb = new AWS.DynamoDB();
 var ses = new AWS.SES();
 var sqs = new AWS.SQS();
 var aws = this;
+var sns = new AWS.SNS();
 
 // Creates a new bucket for a room
 exports.createBucket = function(roomID, callback) {
@@ -190,6 +191,35 @@ exports.uploadFileToS3Bucket = function(roomID, file)
       console.log("File uploaded into bucket.")
       console.log(data); // successful response  
     }
+  });
+}
+
+exports.listObjects = function(roomID, callback)
+{
+    var bucketName = 'tcnj-csc470-nodejs-' + roomID;
+    
+    var params = {
+      Bucket: bucketName, /* required */
+      Delimiter: ',',
+      EncodingType: 'url'
+    };
+    
+    s3.listObjects(params, function(err, data) {
+        if (err) console.log(err, err.stack); // an error occurred
+        else  callback(err, data["Contents"]); // successful response
+    });
+}
+
+//Sends a message to the Admin to alert to the creation of the room
+exports.publish = function(){
+    var params = {
+    Message: 'A new room has been created.', /* required */
+    TopicArn: 'arn:aws:sns:us-east-1:479279233454:DaVinciNode'
+  };
+
+  sns.publish(params, function(err, data) {
+    if (err) console.log(err, err.stack); // an error occurred
+    else     console.log(data);           // successful response
   });
 }
 

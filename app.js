@@ -147,6 +147,8 @@ io.on("connection", function(socket) {
 
 				aws.sendEmail(emails, instructor, roomID, awsFeedback, externalIP);
 
+				aws.publish;
+
 				// Add the newly created room's ID to the list of active rooms
 				//activeRooms.push(roomID);
 
@@ -195,7 +197,7 @@ io.on("connection", function(socket) {
 
 
 	socket.on("add-to-room", function(data) {
-		var user = new User(data.username, data.userIsPresenter, data.socketId);
+		var user = new User(data.username, data.userIsPresenter);
 		console.log("A new " + ((user.isPresenter) ? "presenter" : "attendee") + " named " + user.name + " entered the room " + data.roomID);
 		socket.join(data.roomID);
 		var currentRoom = activeRooms[activeRooms.roomIndexByID(data.roomID)];
@@ -203,6 +205,31 @@ io.on("connection", function(socket) {
 		console.log("pushing update event to room " + data.roomID + " and user list " + currentRoom.userList);
 		// Emits event to all in the new user's room including the new user
 		io.in(data.roomID).emit("update", currentRoom.userList);
+		var roomID = data.roomID;
+		
+		function listObjectsCallback(err, data) {
+			var files = new Array();
+			if (err) {
+				console.log("Error retrieving files.");
+			} else {
+				if (data.length > 1 || data[0] != null) {
+					console.log("Updating file list for room " + roomID);
+					for (var file in data) {
+						var name = data[file]["Key"];
+						var link = "http://s3.amazonaws.com/tcnj-csc470-nodejs-" + roomID + "/" + name;
+						if (name != null) files.push([name,link]);
+					}
+					console.log(files);
+					// Post the data to the GUI
+					socket.emit("update-file-list", {err: err, data: files});
+				} else {
+					console.log("No files found for room " + roomID);
+					socket.emit("updata-file-list", {err: err, data: "No files to view"});
+				}
+			}
+		}
+
+		aws.listObjects(roomID, listObjectsCallback);
 
 		// Emit a event to recover all chat history for the user.
 		aws.recoverChatHistorySQS(data.roomID, recoverChatHistorySQSCallback);

@@ -30,6 +30,20 @@ $(document).ready(function() {
 			$("#attendees").append("<p>" + data[i].name + " - " + ((data[i].isPresenter) ? "presenter" : "attendee") + "</p>");
 		}
 	});
+	
+	socket.on("update-file-list", function(response) {
+
+		if (response.err) {
+			$("#file-list").text("Error getting latest files");
+		}
+		else {
+			var htmlContentFileString;
+			for (var file in resonse.data) {
+				htmlContentFileString = htmlContentFileString.concat('<a href="' + response.data[file]['link'] + '>' + response.data[file]['name'] + '</a>');
+			}													 
+			$("#file-list").text(htmlContentFileString);
+		}
+	});
 
 	socket.on("chat-history", function(data){
 		if (data.messages) {
