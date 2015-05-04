@@ -203,6 +203,13 @@ io.on("connection", function(socket) {
 		console.log("pushing update event to room " + data.roomID + " and user list " + currentRoom.userList);
 		// Emits event to all in the new user's room including the new user
 		io.in(data.roomID).emit("update", currentRoom.userList);
+
+		// Emit a event to recover all chat history for the user.
+		aws.recoverChatHistorySQS(data.roomID, recoverChatHistorySQSCallback);
+
+		function recoverChatHistorySQSCallback(err, data) {
+			socket.emit("chat-history", {messages: currentRoom.chatHistory});	
+		}
 	});
     
     // Listen for delete-room event, which is called when the instructor leaves the room
@@ -248,8 +255,11 @@ io.on("connection", function(socket) {
 	socket.on("chat-send-message", function(data) {
 		var roomID = data.roomID;
 
+		// getting the current room.
+		var currentRoom = activeRooms[activeRooms.roomIndexByID(roomID)];
+
 		// getting the current users in the room.
-		var currentRoomUsers = activeRooms[activeRooms.roomIndexByID(roomID)].userList;
+		var currentRoomUsers = currentRoom.userList;
 
 		// recovering the user object.
 		var user;
@@ -263,6 +273,7 @@ io.on("connection", function(socket) {
 
 		// adding the user object to the data object that will be send to client.
 		data.user = user;
+		data.sentTime = (new Date).getTime();
 
 		console.log('User named ' + user.name + ' in the room' + roomID + ' sent a message on chat.');
 
@@ -271,6 +282,11 @@ io.on("connection", function(socket) {
 
 		// send the message to queue to store a chat history.
 		aws.logChatHistory(roomID, data);
+
+		if (!currentRoom.chatHistory)
+			currentRoom.chatHistory = new Array();
+
+		currentRoom.chatHistory.push(data);
 	});
 });
 

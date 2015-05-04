@@ -200,6 +200,9 @@ exports.createQueueSQS = function(roomID, callback) {
 
   var params = {
     QueueName: name, /* required */
+    Attributes: {
+      ReceiveMessageWaitTimeSeconds: '20',
+    },
   };
   
   sqs.createQueue(params, function(err, data) {
@@ -215,11 +218,12 @@ exports.createQueueSQS = function(roomID, callback) {
   });
 }
 
-// Checks if a queue exist and send a message. Otherwise create the queue and send the message.
+// log the chat history on a SQS queue of a specific room.
 exports.logChatHistory = function(roomID, message) {
 
   var queueURL;
 
+  // callback for getQueueURLSQS.
   function getQueueURLSQSCallback(err, data) {
     if (!err) {
       queueURL = data.QueueUrl;
@@ -231,6 +235,7 @@ exports.logChatHistory = function(roomID, message) {
   this.getQueueURLSQS(roomID, getQueueURLSQSCallback);
 }
 
+// recover the queue URL on SQS for a specific queue name.
 exports.getQueueURLSQS = function(roomID, callback) {
   var name = 'tcnj-csc470-nodejs-' + roomID;
   
@@ -252,7 +257,7 @@ exports.getQueueURLSQS = function(roomID, callback) {
   });
 }
 
-
+// send a new message to a queue on SQS.
 exports.sendMessageSQS = function(queueURL, message) {
   
   var params = {
@@ -267,5 +272,43 @@ exports.sendMessageSQS = function(queueURL, message) {
       console.log(err, err.stack); // an error occurred
     }
     else     console.log(data);           // successful response
+  });
+}
+
+// this function recover the room chat history from SQS.
+exports.recoverChatHistorySQS = function(roomID, callback) {
+
+  var queueURL;
+
+  // callback for getQueueURLSQS.
+  function getQueueURLSQSCallback(err, data) {
+    if (!err) {
+      queueURL = data.QueueUrl;
+      aws.receiveMessagesSQS(queueURL, callback);
+    }
+  }
+
+  // recovering the queue URL.
+  this.getQueueURLSQS(roomID, getQueueURLSQSCallback);
+}
+
+// recover all messages from a queue on SQS.
+exports.receiveMessagesSQS = function(queueURL, callback) {
+  
+  var params = {
+    QueueUrl: queueURL, /* required */
+    MaxNumberOfMessages: 10,
+    VisibilityTimeout: 0,
+    WaitTimeSeconds: 0,
+  };
+
+  sqs.receiveMessage(params, function(err, data) {
+    if (err) {
+      console.log("Messages cannot be recovered.")
+      console.log(err, err.stack); // an error occurred
+    }
+    else     console.log(data);           // successful response
+
+    callback(err, data);
   });
 }

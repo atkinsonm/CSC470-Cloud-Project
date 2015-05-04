@@ -31,6 +31,14 @@ $(document).ready(function() {
 		}
 	});
 
+	socket.on("chat-history", function(data){
+		if (data.messages) {
+			for (var i = 0; i < data.messages.length; i++) {
+				addMessageChatHistory(data.messages[i].user.name, data.messages[i].user.isPresenter, data.messages[i].message);
+			};
+		}
+	});
+
 	socket.on("chat-receive-message", function (data) {
 		addMessageChatHistory(data.user.name, data.user.isPresenter, data.message);
 	});
