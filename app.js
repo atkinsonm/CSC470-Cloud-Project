@@ -70,7 +70,6 @@ activeRooms.deleteUserBySocketID = function(socketID) {
 
 // Toggles the handRaised value of the user in room roomID and with a socketID of socketID
 activeRooms.toggleHand = function(roomID, socketID) {
-	debugger;
 	for (var roomInd = 0; roomInd < this.length; roomInd++) {
 		if (roomID === this[roomInd].id) {
 			for (var userInd = 0; userInd < this[roomInd].userList.length; userInd++) {
@@ -360,9 +359,7 @@ io.on("connection", function(socket) {
 	});
 
 	socket.on("toggle-hand", function(data) {
-		debugger;
 		var roomIndex = activeRooms.toggleHand(data.roomID, socket.id);
-		debugger;
 		if (typeof(roomIndex) !== "undefined")
 			io.in(data.roomID).emit("update", activeRooms[roomIndex].userList);
 	});
@@ -370,7 +367,6 @@ io.on("connection", function(socket) {
 	socket.on('disconnect', function () {
 		// Gets the ID of the room that the user has been deleted from, if a user has been deleted
 		var discRoomID = activeRooms.deleteUserBySocketID(socket.id);
-		debugger;
 
 		// If the discRoomID is not undefined, a user has been removed from a room
 		if (typeof(discRoomID) !== "undefined") {
