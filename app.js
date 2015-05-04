@@ -197,7 +197,7 @@ io.on("connection", function(socket) {
 
 
 	socket.on("add-to-room", function(data) {
-		var user = new User(data.username, data.userIsPresenter);
+		var user = new User(data.username, data.userIsPresenter, data.socketId);
 		console.log("A new " + ((user.isPresenter) ? "presenter" : "attendee") + " named " + user.name + " entered the room " + data.roomID);
 		socket.join(data.roomID);
 		var currentRoom = activeRooms[activeRooms.roomIndexByID(data.roomID)];
