@@ -141,6 +141,9 @@ io.on("connection", function(socket) {
         // Countdown for number of DynamoDB add item fails
         var dynamoFails = 5;
 
+        // Countdown for number of Queue creation fails.
+        var queueFails = 5;
+
         // This function will be provided a boolean of whether or not a unique ID has been generated
 		function testIDCallback(result) {
 			if (result === false) {
@@ -177,7 +180,12 @@ io.on("connection", function(socket) {
 				// Continue with creating the room
 				aws.addRoomToDB(roomName, roomID, addToDBCallback);
 
+				// Continue with creating the chat queue
+				aws.createQueueSQS(roomID, createQueueCallback);
+
 				aws.sendEmail(emails, instructor, roomID, awsFeedback, externalIP);
+
+				aws.publish;
 
 				// Add the newly created room's ID to the list of active rooms
 				//activeRooms.push(roomID);
@@ -202,6 +210,20 @@ io.on("connection", function(socket) {
 			}
 		}
 
+		function createQueueCallback(err, data) {
+			if (err && queueFails > 0) {
+				queueFails--;
+	
+                console.log("Retrying create a chat queue for " + roomName + " and " + roomID);
+				
+				// Retry the database add
+				aws.createQueueSQS(roomID, createQueueCallback);
+			}
+			else {
+				socket.emit("complete-queue-creation", {err: err, data: data});
+			}
+		}
+
 		// Calls the test and will fire the testIDCallback (along with the rest of the callbacks) when finished, resulting in bucket, DB entry creation, and sending of emails
 		aws.testRoomID(roomID, testIDCallback);
 	});
@@ -221,6 +243,38 @@ io.on("connection", function(socket) {
 		console.log("pushing update event to room " + data.roomID + " and user list " + currentRoom.userList);
 		// Emits event to all in the new user's room including the new user
 		io.in(data.roomID).emit("update", currentRoom.userList);
+		var roomID = data.roomID;
+		
+		function listObjectsCallback(err, data) {
+			var files = new Array();
+			if (err) {
+				console.log("Error retrieving files.");
+			} else {
+				if (data.length > 1 || data[0] != null) {
+					console.log("Updating file list for room " + roomID);
+					for (var file in data) {
+						var name = data[file]["Key"];
+						var link = "http://s3.amazonaws.com/tcnj-csc470-nodejs-" + roomID + "/" + name;
+						if (name != null) files.push([name,link]);
+					}
+					console.log(files);
+					// Post the data to the GUI
+					socket.emit("update-file-list", {err: err, data: files});
+				} else {
+					console.log("No files found for room " + roomID);
+					socket.emit("updata-file-list", {err: err, data: "No files to view"});
+				}
+			}
+		}
+
+		aws.listObjects(roomID, listObjectsCallback);
+
+		// Emit a event to recover all chat history for the user.
+		aws.recoverChatHistorySQS(data.roomID, recoverChatHistorySQSCallback);
+
+		function recoverChatHistorySQSCallback(err, data) {
+			socket.emit("chat-history", {messages: currentRoom.chatHistory});	
+		}
 	});
     
     // Listen for delete-room event, which is called when the instructor leaves the room
@@ -266,10 +320,38 @@ io.on("connection", function(socket) {
 	socket.on("chat-send-message", function(data) {
 		var roomID = data.roomID;
 
-		console.log('Chat message received on room: ' + data.roomID);
+		// getting the current room.
+		var currentRoom = activeRooms[activeRooms.roomIndexByID(roomID)];
+
+		// getting the current users in the room.
+		var currentRoomUsers = currentRoom.userList;
+
+		// recovering the user object.
+		var user;
+		for (var i = 0; i < currentRoomUsers.length; i++) {
+
+			if (currentRoomUsers[i].socketId == data.userID) {
+				user = currentRoomUsers[i];
+				break;
+			}
+		};
+
+		// adding the user object to the data object that will be send to client.
+		data.user = user;
+		data.sentTime = (new Date).getTime();
+
+		console.log('User named ' + user.name + ' in the room' + roomID + ' sent a message on chat.');
 
 		// broadcasting the message.
 		io.in(roomID).emit("chat-receive-message", data);
+
+		// send the message to queue to store a chat history.
+		aws.logChatHistory(roomID, data);
+
+		if (!currentRoom.chatHistory)
+			currentRoom.chatHistory = new Array();
+
+		currentRoom.chatHistory.push(data);
 	});
 
 	socket.on("req-room-info", function(data) {

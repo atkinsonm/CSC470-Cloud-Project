@@ -1,5 +1,5 @@
-function addMessageChatHistory (username, message) {
-	$("#chatroom").append($('<p>').text(message).prepend($('<strong>').text(username+': ')));
+function addMessageChatHistory (username, isPresenter, message) {
+	$("#chatroom").append($('<p>').text(message).prepend($('<strong>').text(username+(isPresenter ? '(presenter)' : '') + ': ')));
 }
 
 var urlTokens = document.URL.split("/");
@@ -49,9 +49,31 @@ $(document).ready(function() {
 			$("#attendees").append(htmlStr + "</p>");
 		}
 	});
+	
+	socket.on("update-file-list", function(response) {
+
+		if (response.err) {
+			$("#file-list").text("Error getting latest files");
+		}
+		else {
+			var htmlContentFileString;
+			for (var file in resonse.data) {
+				htmlContentFileString = htmlContentFileString.concat('<a href="' + response.data[file]['link'] + '>' + response.data[file]['name'] + '</a>');
+			}													 
+			$("#file-list").text(htmlContentFileString);
+		}
+	});
+
+	socket.on("chat-history", function(data){
+		if (data.messages) {
+			for (var i = 0; i < data.messages.length; i++) {
+				addMessageChatHistory(data.messages[i].user.name, data.messages[i].user.isPresenter, data.messages[i].message);
+			};
+		}
+	});
 
 	socket.on("chat-receive-message", function (data) {
-		addMessageChatHistory(data.username, data.message);
+		addMessageChatHistory(data.user.name, data.user.isPresenter, data.message);
 	});
 
 	// adding a keypress event handler on chat textbox.
@@ -72,9 +94,6 @@ $(document).ready(function() {
 
 			// emmit the message
 			socket.emit("chat-send-message", data);
-
-			// upload the message for the user that send the message.
-			//addMessageChatHistory(socket.id, data.message);
 			
 			// cleaning the message text box.
 			$("#chat_box").val("");
