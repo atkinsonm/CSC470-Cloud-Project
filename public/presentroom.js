@@ -44,7 +44,7 @@ $(document).ready(function() {
 			var htmlStr = "<p>" + user.name + " - " + ((user.isPresenter) ? "presenter" : "attendee");
 
 			if (user.handRaised)
-				htmlStr = htmlStr + '<img href="/img/hand.png" height="64" width="64">';
+				htmlStr = htmlStr + '<img src="/img/hand.png" height="32" width="32">';
 
 			$("#attendees").append(htmlStr + "</p>");
 		}
