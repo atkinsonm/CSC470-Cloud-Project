@@ -1,5 +1,5 @@
-function addMessageChatHistory (username, message) {
-	$("#chatroom").append($('<p>').text(message).prepend($('<strong>').text(username+': ')));
+function addMessageChatHistory (username, isPresenter, message) {
+	$("#chatroom").append($('<p>').text(message).prepend($('<strong>').text(username+(isPresenter ? '(presenter)' : '') + ': ')));
 }
 
 $(document).ready(function() {
@@ -21,7 +21,7 @@ $(document).ready(function() {
 	
 	socket.on("connect", function () {
 		username = prompt("Enter your name to join the room");
-		socket.emit("add-to-room", {roomID: roomID, username: username, userIsPresenter: userIsPresenter});
+		socket.emit("add-to-room", {roomID: roomID, username: username, userIsPresenter: userIsPresenter, socketId: socket.id});
 	});
 
 	socket.on("update", function (data) {
@@ -45,8 +45,16 @@ $(document).ready(function() {
 		}
 	});
 
+	socket.on("chat-history", function(data){
+		if (data.messages) {
+			for (var i = 0; i < data.messages.length; i++) {
+				addMessageChatHistory(data.messages[i].user.name, data.messages[i].user.isPresenter, data.messages[i].message);
+			};
+		}
+	});
+
 	socket.on("chat-receive-message", function (data) {
-		addMessageChatHistory(data.userID, data.message);
+		addMessageChatHistory(data.user.name, data.user.isPresenter, data.message);
 	});
 
 	// adding a keypress event handler on chat textbox.
@@ -67,9 +75,6 @@ $(document).ready(function() {
 
 			// emmit the message
 			socket.emit("chat-send-message", data);
-
-			// upload the message for the user that send the message.
-			//addMessageChatHistory(socket.id, data.message);
 			
 			// cleaning the message text box.
 			$("#chat_box").val("");
