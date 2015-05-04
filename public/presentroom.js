@@ -73,7 +73,7 @@ $(document).ready(function() {
 	});
 
 	socket.on("chat-receive-message", function (data) {
-		addMessageChatHistory(data.user.name, data.user.isPresenter, data.message);
+		addMessageChatHistory(data.username, data.userIsPresenter, data.message);
 	});
 
 	// adding a keypress event handler on chat textbox.
@@ -88,7 +88,8 @@ $(document).ready(function() {
 			// getting the message from the text box.
 			var data = {
 				roomID : roomID,
-				username : username, 
+				username : username,
+				userIsPresenter : userIsPresenter,
 				message : $("#chat_box").val()
 			};			
 

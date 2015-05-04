@@ -318,39 +318,25 @@ io.on("connection", function(socket) {
 	// Listen for a chat message and broadcast for all users in the room.
 	socket.on("chat-send-message", function(data) {
 		var roomID = data.roomID;
-
-		// getting the current room.
-		var currentRoom = activeRooms[activeRooms.roomIndexByID(roomID)];
-
-		// getting the current users in the room.
-		var currentRoomUsers = currentRoom.userList;
-
-		// recovering the user object.
-		var user;
-		for (var i = 0; i < currentRoomUsers.length; i++) {
-
-			if (currentRoomUsers[i].socketId == data.userID) {
-				user = currentRoomUsers[i];
-				break;
-			}
-		};
+		var username = data.username;
+		var userIsPresenter = data.userIsPresenter;
 
 		// adding the user object to the data object that will be send to client.
-		data.user = user;
-		data.sentTime = (new Date).getTime();
+		console.log('User named ' + username + ' in the room' + roomID + ' sent a message on chat.');
 
-		console.log('User named ' + user.name + ' in the room' + roomID + ' sent a message on chat.');
+		var sendData = {
+			roomID: roomID,
+			username: username,
+			userIsPresenter: userIsPresenter,
+			message: data.message,
+			sentTime: (new Date).getTime()
+		};
 
 		// broadcasting the message.
-		io.in(roomID).emit("chat-receive-message", data);
+		io.in(roomID).emit("chat-receive-message", sendData);
 
 		// send the message to queue to store a chat history.
-		aws.logChatHistory(roomID, data);
-
-		if (!currentRoom.chatHistory)
-			currentRoom.chatHistory = new Array();
-
-		currentRoom.chatHistory.push(data);
+		aws.logChatHistory(roomID, sendData);
 	});
 
 	socket.on("req-room-info", function(data) {
