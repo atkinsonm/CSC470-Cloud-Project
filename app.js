@@ -337,6 +337,11 @@ io.on("connection", function(socket) {
 
 		// send the message to queue to store a chat history.
 		aws.logChatHistory(roomID, sendData);
+
+		if (!activeRooms[activeRooms.roomIndexByID(roomID)].chatHistory)
+			activeRooms[activeRooms.roomIndexByID(roomID)].chatHistory = new Array();
+
+		activeRooms[activeRooms.roomIndexByID(roomID)].chatHistory.push(sendData);
 	});
 
 	socket.on("req-room-info", function(data) {

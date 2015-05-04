@@ -67,7 +67,7 @@ $(document).ready(function() {
 	socket.on("chat-history", function(data){
 		if (data.messages) {
 			for (var i = 0; i < data.messages.length; i++) {
-				addMessageChatHistory(data.messages[i].user.name, data.messages[i].user.isPresenter, data.messages[i].message);
+				addMessageChatHistory(data.messages[i].username, data.messages[i].userIsPresenter, data.messages[i].message);
 			};
 		}
 	});
