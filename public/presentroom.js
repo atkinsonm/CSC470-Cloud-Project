@@ -44,6 +44,10 @@ $(document).ready(function() {
 			$("#file-list").text(htmlContentFileString);
 		}
 	});
+	
+	socket.on("update-main-file", function (response) {
+		$("#presentation").append("<iframe id=\"presentationFile\" src=\"http://docs.google.com/gview?url=" + response.data + "&embedded=true\" style=\"display:block; width:100%; height:470px;\" frameborder=\"0\"></iframe>");
+	});
 
 	socket.on("chat-receive-message", function (data) {
 		addMessageChatHistory(data.userID, data.message);

@@ -133,7 +133,7 @@ io.on("connection", function(socket) {
 
 				if (file != false) {
 					// Upload the file in the bucket.
-					aws.uploadFileToS3Bucket(roomID, file);
+					aws.uploadFileToS3Bucket(roomID, file, true);
 				}
 	
 				// Continue with creating the room
@@ -183,7 +183,21 @@ io.on("connection", function(socket) {
 		console.log("pushing update event to room " + data.roomID + " and user list " + currentRoom.userList);
 		// Emits event to all in the new user's room including the new user
 		io.in(data.roomID).emit("update", currentRoom.userList);
+		
+		
 		var roomID = data.roomID;
+		var mainFileURL = null;
+		
+		function headObjectCallback(err, data) {
+			if (err) {
+				console.log("Error retrieving files.");
+			} else {
+				if (data['ismain'] == 'True') {
+					mainFileURL = "http://s3.amazonaws.com/tcnj-csc470-nodejs-" + roomID + "/" + data['name'];
+					io.in(roomID).emit("update-main-file", {err: err, data: mainFileURL});
+				}
+			}	
+		}
 		
 		function listObjectsCallback(err, data) {
 			var files = new Array();
@@ -195,14 +209,16 @@ io.on("connection", function(socket) {
 					for (var file in data) {
 						var name = data[file]["Key"];
 						var link = "http://s3.amazonaws.com/tcnj-csc470-nodejs-" + roomID + "/" + name;
-						if (name != null) files.push([name,link]);
+						if (name != null) {
+							files.push([name,link]);
+							aws.headObject(roomID, name, headObjectCallback);
+						}
 					}
-					console.log(files);
 					// Post the data to the GUI
 					socket.emit("update-file-list", {err: err, data: files});
 				} else {
 					console.log("No files found for room " + roomID);
-					socket.emit("updata-file-list", {err: err, data: "No files to view"});
+					io.in(roomID).emit("update-file-list", {err: err, data: "No files to view"});
 				}
 			}
 		}
