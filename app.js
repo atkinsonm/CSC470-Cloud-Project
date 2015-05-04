@@ -26,6 +26,10 @@ app.get("/:fileName", function (req, res) {
 	res.sendFile(__dirname + clientDir + "/" + req.params.fileName);
 });
 
+app.get("/:directory/:fileName", function(req, res) {
+	res.sendFile(__dirname + clientDir + "/" + req.params.directory + "/" + req.params.fileName);
+});
+
 // Get the public IP address of the Node server
 var externalIP = "";
 getIP(function (err, ip) {
@@ -40,13 +44,47 @@ getIP(function (err, ip) {
 var activeRooms = [];
 
 // This function is called by the array of rooms - returns -1 if the room ID is not found - returns the index of the room in the array if the room ID is found
-Array.prototype.roomIndexByID = function(targetID) {
+activeRooms.roomIndexByID = function(targetID) {
 	var resIndex = -1;
 	for (var i = 0; i < this.length; i++) {
 		if (targetID === this[i].id)
 			resIndex = i;
 	}
 	return resIndex;
+}
+
+// This function is called by the array of rooms - the user list of each room is checked for the user with the socket ID string specified by the paramater, and this user is deleted from the room's user list
+activeRooms.deleteUserBySocketID = function(socketID) {
+	for (var roomInd = 0; roomInd < this.length; roomInd++) {
+		for (var userInd = 0; userInd < this[roomInd].userList.length; userInd++) {
+			if (this[roomInd].userList[userInd].socketID === socketID) {
+				this[roomInd].userList.splice(userInd, 1);
+				// Return the room ID if the user was found
+				return this[roomInd].id;
+			}
+		}
+	}
+	// If the user was not found, return undefined
+	return undefined;
+}
+
+// Toggles the handRaised value of the user in room roomID and with a socketID of socketID
+activeRooms.toggleHand = function(roomID, socketID) {
+	debugger;
+	for (var roomInd = 0; roomInd < this.length; roomInd++) {
+		if (roomID === this[roomInd].id) {
+			for (var userInd = 0; userInd < this[roomInd].userList.length; userInd++) {
+				var user = this[roomInd].userList[userInd];
+				if (user.socketID === socketID) {
+					user.handRaised ? user.handRaised = false : user.handRaised = true;
+					// Returns the room's index in the array if the user was found and the handRaise value was toggled
+					return roomInd;
+				}
+			}
+		}
+	}
+	// Returns undefined if the user could not be found and the hand was not toggled
+	return undefined;
 }
 
 // This route takes the user to the room
@@ -58,7 +96,7 @@ app.get("/room/:userType/:roomID", function (req, res) {
 	}
 	else if (activeRooms.roomIndexByID(req.params.roomID) > -1 && req.params.userType === "a") {
 		// An attendee has logged in
-		res.sendFile(__dirname + clientDir + "/presenterroom.html");
+		res.sendFile(__dirname + clientDir + "/attendeeroom.html");
 	}
 	else {
 		res.send("<h1>Room Not Found</h1>");
@@ -144,7 +182,7 @@ io.on("connection", function(socket) {
 				// Add the newly created room's ID to the list of active rooms
 				//activeRooms.push(roomID);
 
-				var newRoom = new Room(roomID, roomName);
+				var newRoom = new Room(roomID, roomName, instructor);
 				activeRooms.push(newRoom);
 			}
 			else
@@ -175,7 +213,7 @@ io.on("connection", function(socket) {
 
 
 	socket.on("add-to-room", function(data) {
-		var user = new User(data.username, data.userIsPresenter);
+		var user = new User(data.username, data.userIsPresenter, socket.id);
 		console.log("A new " + ((user.isPresenter) ? "presenter" : "attendee") + " named " + user.name + " entered the room " + data.roomID);
 		socket.join(data.roomID);
 		var currentRoom = activeRooms[activeRooms.roomIndexByID(data.roomID)];
@@ -228,20 +266,50 @@ io.on("connection", function(socket) {
 	socket.on("chat-send-message", function(data) {
 		var roomID = data.roomID;
 
-		console.log('Chat message received on room: ' + roomID);
+		console.log('Chat message received on room: ' + data.roomID);
 
 		// broadcasting the message.
 		io.in(roomID).emit("chat-receive-message", data);
 	});
+
+	socket.on("req-room-info", function(data) {
+		var roomData = activeRooms[activeRooms.roomIndexByID(data.roomID)];
+		socket.emit("res-room-info", roomData);
+	});
+
+	socket.on("toggle-hand", function(data) {
+		debugger;
+		var roomIndex = activeRooms.toggleHand(data.roomID, socket.id);
+		debugger;
+		if (typeof(roomIndex) !== "undefined")
+			io.in(data.roomID).emit("update", activeRooms[roomIndex].userList);
+	});
+
+	socket.on('disconnect', function () {
+		// Gets the ID of the room that the user has been deleted from, if a user has been deleted
+		var discRoomID = activeRooms.deleteUserBySocketID(socket.id);
+		debugger;
+
+		// If the discRoomID is not undefined, a user has been removed from a room
+		if (typeof(discRoomID) !== "undefined") {
+			console.log("user has disconnected from room " + discRoomID);
+			// Update all sockets in the room with the new user list
+			var currentRoom = activeRooms[activeRooms.roomIndexByID(discRoomID)];
+			io.in(discRoomID).emit("update", currentRoom.userList);
+		}
+	});
 });
 
-function Room(id, name) {
+function Room(id, name, instructorName) {
 	this.id = id;
 	this.name = name;
 	this.userList = [];
+	this.instructorName = instructorName;
 }
 
-function User(name, isPresenter) {
+function User(name, isPresenter, socketID) {
 	this.name = name;
 	this.isPresenter = isPresenter;
+	this.socketID = socketID;
+	this.handRaised = false;
 }

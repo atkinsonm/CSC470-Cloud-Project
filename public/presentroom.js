@@ -2,37 +2,56 @@ function addMessageChatHistory (username, message) {
 	$("#chatroom").append($('<p>').text(message).prepend($('<strong>').text(username+': ')));
 }
 
+var urlTokens = document.URL.split("/");
+var roomID = urlTokens.pop();
+var userType = urlTokens.pop();
+var userIsPresenter;
+
+if (userType === "p") 
+	userIsPresenter = true;
+else
+	userIsPresenter = false;
+
+var username = "Anonymous";
+
 $(document).ready(function() {
 	var socket = io();
 
-	var urlTokens = document.URL.split("/");
-	var roomID = urlTokens.pop();
-	var userType = urlTokens.pop();
-	var userIsPresenter;
-
-	if (userType === "p") 
-		userIsPresenter = true;
-	else
-		userIsPresenter = false;
-
-	$("#title").text("Welcome to room " + roomID);
-
-	var username;
+	$("#title").text("Loading room info...");
 	
 	socket.on("connect", function () {
-		username = prompt("Enter your name to join the room");
+		if (!userIsPresenter) {
+			username = prompt("Enter your name to join the room");
+			if (username === null)
+				username = "Anonymous";
+		}
+	});
+
+	socket.emit("req-room-info", {roomID: roomID});
+
+	socket.on("res-room-info", function(roomData) {
+		$("#title").text("Welcome to " + roomData.name);
+		if (userIsPresenter)
+			username = roomData.instructorName;
 		socket.emit("add-to-room", {roomID: roomID, username: username, userIsPresenter: userIsPresenter});
 	});
 
 	socket.on("update", function (data) {
 		$("#attendees").empty();
 		for (var i = 0; i < data.length; i++) {
-			$("#attendees").append("<p>" + data[i].name + " - " + ((data[i].isPresenter) ? "presenter" : "attendee") + "</p>");
+
+			var user = data[i];
+			var htmlStr = "<p>" + user.name + " - " + ((user.isPresenter) ? "presenter" : "attendee");
+
+			if (user.handRaised)
+				htmlStr = htmlStr + '<img href="/img/hand.png" height="64" width="64">';
+
+			$("#attendees").append(htmlStr + "</p>");
 		}
 	});
 
 	socket.on("chat-receive-message", function (data) {
-		addMessageChatHistory(data.userID, data.message);
+		addMessageChatHistory(data.username, data.message);
 	});
 
 	// adding a keypress event handler on chat textbox.
@@ -46,9 +65,9 @@ $(document).ready(function() {
 
 			// getting the message from the text box.
 			var data = {
-				"roomID" : roomID,
-				"userID" : socket.id,
-				"message" : $("#chat_box").val()
+				roomID : roomID,
+				username : username, 
+				message : $("#chat_box").val()
 			};			
 
 			// emmit the message
@@ -60,5 +79,10 @@ $(document).ready(function() {
 			// cleaning the message text box.
 			$("#chat_box").val("");
 		}
+	});
+
+	$("#raisehand").on("click", function() {
+		socket.emit("toggle-hand", {roomID: roomID});
+		$(this).toggleClass("hand-raised");
 	});
 });
