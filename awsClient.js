@@ -241,10 +241,10 @@ exports.decodeDataURL = function(dataString) {
 }
 
 //Sends a message to the Admin to alert to the creation of the room
-exports.publish = function(activeRooms){
+exports.publish = function(numRooms){
     var params = {
-    	Message: 'A new room has been created. The total number of rooms is' + activeRooms.length(), /* required */
-    	TopicArn: 'arn:aws:sns:us-east-1:479279233454:DaVinciNode'
+    	Message: 'A new room has been created. The number of current rooms is ' + numRooms, /* required */
+    	TopicArn: 'arn:aws:sns:us-east-1:191927237267:Node_js_project'
   	};
 
   sns.publish(params, function(err, data) {
