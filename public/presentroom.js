@@ -1,5 +1,5 @@
 function addMessageChatHistory (username, isPresenter, message) {
-	$("#chatroom").append($('<p>').text(message).prepend($('<strong>').text(username+(isPresenter ? '(presenter)' : '') + ': ')));
+	$("#chatroom").append($('<p>').text(message).addClass((isPresenter ? 'presenter' : 'attendee')).prepend($('<strong>').text(username+': ')));
 }
 
 var urlTokens = document.URL.split("/");
