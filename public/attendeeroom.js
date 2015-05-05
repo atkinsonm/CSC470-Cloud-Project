@@ -29,5 +29,7 @@ $(document).ready(function() {
 			// cleaning the message text box.
 			$("#chat_box").val("");
 		}
+		var myDiv = document.getElementById("chatroom");
+		myDiv.scrollTop = myDiv.scrollHeight;
 	});
 });
