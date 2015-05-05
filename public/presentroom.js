@@ -91,10 +91,16 @@ $(document).ready(function() {
 			// parsing the room ID.
 			var roomID = location.pathname.split("/")[3];
 
+			var displayName;
+			if ($("#anon-check").prop("checked"))
+				displayName = "Anonymous";
+			else
+				displayName = username;
+
 			// getting the message from the text box.
 			var data = {
 				roomID : roomID,
-				username : username,
+				username : displayName,
 				userIsPresenter : userIsPresenter,
 				message : $("#chat_box").val()
 			};			
@@ -115,4 +121,6 @@ $(document).ready(function() {
 		socket.emit("toggle-hand", {roomID: roomID});
 		$(this).toggleClass("hand-raised");
 	});
+
+
 });
