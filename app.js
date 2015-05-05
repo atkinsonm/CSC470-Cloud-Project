@@ -184,13 +184,16 @@ io.on("connection", function(socket) {
 
 				aws.sendEmail(emails, instructor, roomID, awsFeedback, externalIP);
 
-				aws.publish;
+				
 
 				// Add the newly created room's ID to the list of active rooms
 				//activeRooms.push(roomID);
 
 				var newRoom = new Room(roomID, roomName, instructor);
 				activeRooms.push(newRoom);
+
+				//Sends messages to Admins acknowledging creation of room.
+				aws.publish(activeRooms.length);
 			}
 			else
 				socket.emit("complete-bucket", {err: err, data: data});
