@@ -165,7 +165,6 @@ exports.sendEmail = function(sendTo, instructor, roomID, callback, externalIP) {
     });   
 }
 
-
 // Save a temporarily file.
 exports.uploadFileToS3Bucket = function(roomID, file, isMain)
 {
@@ -238,13 +237,15 @@ exports.decodeDataURL = function(dataString) {
     
     if (matches.length !== 3) {
         return new Error('Invalid input string');
+	}
+}
 
 //Sends a message to the Admin to alert to the creation of the room
 exports.publish = function(activeRooms){
     var params = {
-    Message: 'A new room has been created. The total number of rooms is' + activeRooms.length(), /* required */
-    TopicArn: 'arn:aws:sns:us-east-1:479279233454:DaVinciNode'
-  };
+    	Message: 'A new room has been created. The total number of rooms is' + activeRooms.length(), /* required */
+    	TopicArn: 'arn:aws:sns:us-east-1:479279233454:DaVinciNode'
+  	};
 
   sns.publish(params, function(err, data) {
     if (err) console.log(err, err.stack); // an error occurred
@@ -371,3 +372,4 @@ exports.receiveMessagesSQS = function(queueURL, callback) {
     callback(err, data);
   });
 }
+

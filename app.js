@@ -243,7 +243,6 @@ io.on("connection", function(socket) {
 		// Emits event to all in the new user's room including the new user
 		io.in(data.roomID).emit("update", currentRoom.userList);
 		
-		
 		var roomID = data.roomID;
 		var mainFileURL = null;
 		
