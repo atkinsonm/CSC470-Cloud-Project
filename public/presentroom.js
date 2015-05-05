@@ -104,11 +104,12 @@ $(document).ready(function() {
 
 			// upload the message for the user that send the message.
 			//addMessageChatHistory(socket.id, data.message);
-			var myDiv = document.getElementById("chatroom");
-			myDiv.scrollTop = myDiv.scrollHeight;
+			
 			// cleaning the message text box.
 			$("#chat_box").val("");
 		}
+		var myDiv = document.getElementById("chatroom");
+		myDiv.scrollTop = myDiv.scrollHeight;
 	});
 
 	$("#raisehand").on("click", function() {
