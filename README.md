@@ -10,7 +10,13 @@ Final Project for CSC 470 - Cloud Computing
   - Adding data about created room to DynamoDB (complete)
   - Adding the uploaded file in the bucket (complete)
 - Send email upon room creation to instructor-specified email list (complete)
-  - Add link for email recipients to access the room (incomplete)
+  - Add link for email recipients to access the room (complete)
+- Room UI and functionality
+  - Chat room (complete)
+  - View of presentation (complete)
+  - Hand raising (complete)
+  - Progress updates for presenter (phase 2? incomplete)
+  - Advanced presentation features (i.e. pointer, etc. ) (phase 2? incomplete)
 - Delete room when the instructor closes the session 
   - Delete bucket (complete)
   - Delete DB entry (complete)
