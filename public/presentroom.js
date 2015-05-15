@@ -50,19 +50,19 @@ $(document).ready(function() {
 		}
 	});
 	
-	socket.on("update-file-list", function(response) {
+	/*socket.on("update-file-list", function(response) {
 
 		if (response.err) {
 			$("#file-list").text("Error getting latest files");
 		}
 		else {
 			var htmlContentFileString;
-			for (var file in resonse.data) {
+			for (var file in response.data) {
 				htmlContentFileString = htmlContentFileString.concat('<a href="' + response.data[file]['link'] + '>' + response.data[file]['name'] + '</a>');
 			}													 
 			$("#file-list").text(htmlContentFileString);
 		}
-	});
+	});*/
 	
 	socket.on("update-main-file", function (response) {
 		if( $("#presentation").is(':empty') ) {
@@ -81,6 +81,16 @@ $(document).ready(function() {
 	socket.on("chat-receive-message", function (data) {
 		addMessageChatHistory(data.username, data.userIsPresenter, data.message);
 	});
+
+	socket.on("complete-file-upload", function (data) {
+
+		// display the success message..
+		$(".file-upload-message-wrapper p.message").text("File uploaded with success.");
+
+		// cleaning the input file.
+		$("#new-file").replaceWith($("#new-file").clone(true));
+	});
+
 
 	// adding a keypress event handler on chat textbox.
 	$("#chat_box").keypress(function (e) {
@@ -123,5 +133,39 @@ $(document).ready(function() {
 		$(this).toggleClass("hand-raised");
 	});
 
+	// preparing the file reader and events.
+	var FReader = new FileReader();
 
+	FReader.onloadend = function(evt){
+
+		// parsing the room ID.
+		var roomID = location.pathname.split("/")[3];
+
+		var file = $('#new-file')[0].files[0];
+
+		var fileData = {
+			'name' : file.name.split('.')[0],
+			'extension' : file.name.split('.')[1],
+			'data' : evt.target.result
+		}
+
+		// Emit a socket event to the server and send the input data
+		socket.emit('upload-file', {roomID : roomID, file : fileData});
+	}
+
+	$("#upload-file-button").on("click", function(e) {
+		$(".file-upload-message-wrapper p.message").text("");
+		$("#new-file").click();
+	});
+
+
+	$("#new-file").on("change", function(e) {
+
+		// getting the file object using jquery.
+		var file = $('#new-file')[0].files[0];
+
+		if (file != undefined) {
+			FReader.readAsDataURL(file);	
+		}
+	});
 });
