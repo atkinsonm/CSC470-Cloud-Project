@@ -103,6 +103,7 @@
 
 			.btn{
 				margin-top: 10px;
+				margin-left: 10px;
 				width: auto;
 				margin-bottom: 5px;
 	 			background: #FFCC02;
@@ -142,6 +143,12 @@
 				color:#FFCC02;
 			}
 
+			.file-upload-message-wrapper {
+				text-align: right;
+  				margin-right: 55px;
+  				color: #D3D3D3;
+			}
+
 		</style>
 
 		<title>WelcomeTo Your Lecture</title>
@@ -152,7 +159,12 @@
 	<body>
 		<div class = "row">
 			<div class ="col-xs-12 col-md-7" id = "title"></div>
-			<div class ="col-xs-8 col-xs-offset-3 col-md-2 col-md-offset-2" ><button class = "btn btn-default" id = "closebutton">CLOSE ROOM</button></div>
+			<div class ="col-xs-8 col-xs-offset-3 col-md-3 col-md-offset-2" >
+				<button class = "btn btn-default" id = "closebutton">CLOSE ROOM</button>
+				<button class = "btn btn-default" id = "upload-file-button">UPLOAD FILE</button>
+				<input type="file" id="new-file" class="hide">
+				<div class="file-upload-message-wrapper"><p class="message"></p></div>
+			</div>
 		</div>
 			<div class="col-xs-12 col-md-9 col-md-offset-1" id ="presentation"></div>
   			<div class="col-xs-12 col-md-3 "><div id = "attendees"><ul id="attendeeslist"></ul></div>

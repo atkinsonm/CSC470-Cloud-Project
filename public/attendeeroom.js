@@ -2,6 +2,13 @@ function addMessageChatHistory (username, isPresenter, message) {
 	$("#chatroom").append($('<p>').text(message).prepend($('<strong>').text(username+(isPresenter ? '(presenter)' : '') + ': ')));
 }
 
+function updateFileList (files) {
+	$("fileList").empty();
+	for (var file in files) {
+		$("#fileList").append("<a href='" + file["link"] + "'>" + file["name"] + "</a>");
+	}
+}
+
 $(document).ready(function() {
 	socket.on("chat-receive-message", function (data) {
 		addMessageChatHistory(data.user.name, data.user.isPresenter, data.message);
@@ -31,5 +38,9 @@ $(document).ready(function() {
 		}
 		var myDiv = document.getElementById("chatroom");
 		myDiv.scrollTop = myDiv.scrollHeight;
+	});
+	
+	socket.on("update-file-list", function (response) {
+		updateFileList(response.data);
 	});
 });

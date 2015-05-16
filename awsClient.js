@@ -165,8 +165,8 @@ exports.sendEmail = function(sendTo, instructor, roomID, callback, externalIP) {
     });   
 }
 
-// Save a temporarily file.
-exports.uploadFileToS3Bucket = function(roomID, file, isMain)
+// Save a file into s3.
+exports.uploadFileToS3Bucket = function(roomID, file, isMain, callback)
 {
   var bucketName = 'tcnj-csc470-nodejs-' + roomID;
   var fileName = file['name'] + '.' + file['extension'];
@@ -196,6 +196,10 @@ exports.uploadFileToS3Bucket = function(roomID, file, isMain)
     else {
       console.log("File uploaded into bucket.")
       console.log(data); // successful response  
+    }
+
+    if (typeof callback !== 'undefined') {
+      callback(err, data);
     }
   });
 }

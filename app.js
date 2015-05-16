@@ -373,6 +373,18 @@ io.on("connection", function(socket) {
 			io.in(data.roomID).emit("update", activeRooms[roomIndex].userList);
 	});
 
+	socket.on("upload-file", function(data) {
+
+		function uploadFileS3BucketCallback(err, data) {
+			if (!err) {				
+				socket.emit("complete-file-upload", {err: err, data: data});
+			}		 
+		}
+		
+		// Upload the file in the bucket.
+		aws.uploadFileToS3Bucket(data.roomID, data.file, false, uploadFileS3BucketCallback);
+	});
+
 	socket.on('disconnect', function () {
 		// Gets the ID of the room that the user has been deleted from, if a user has been deleted
 		var discRoomID = activeRooms.deleteUserBySocketID(socket.id);
