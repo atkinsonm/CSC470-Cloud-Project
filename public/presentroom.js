@@ -53,14 +53,14 @@ $(document).ready(function() {
 	socket.on("update-file-list", function(response) {
 
 		if (response.err) {
-			$("#file-list").text("Error getting latest files");
-		}
-		else {
-			var htmlContentFileString;
-			for (var file in resonse.data) {
-				htmlContentFileString = htmlContentFileString.concat('<a href="' + response.data[file]['link'] + '>' + response.data[file]['name'] + '</a>');
+			$("#fileList").text("Error getting latest files");
+		} else {
+			var htmlContentFileString = "";
+			for (var file in response.data) {
+				var fileStr = JSON.stringify(response.data[file]);
+				htmlContentFileString = htmlContentFileString.concat('<a target="_blank" href="' + fileStr.substring(fileStr.indexOf(',')+2, fileStr.length-2) + '">' + fileStr.substring(2, fileStr.indexOf(',')-1) + '</a><br/>');
 			}													 
-			$("#file-list").text(htmlContentFileString);
+			$("#fileList").html(htmlContentFileString);
 		}
 	});
 	

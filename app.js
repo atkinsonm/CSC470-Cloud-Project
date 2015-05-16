@@ -261,11 +261,11 @@ io.on("connection", function(socket) {
 		}
 		
 		function listObjectsCallback(err, data) {
-			var files = new Array();
 			if (err) {
 				console.log("Error retrieving files.");
 			} else {
 				if (data.length > 1 || data[0] != null) {
+					var files = new Array();
 					console.log("Updating file list for room " + roomID);
 					for (var file in data) {
 						var name = data[file]["Key"];
@@ -276,10 +276,10 @@ io.on("connection", function(socket) {
 						}
 					}
 					// Post the data to the GUI
-					socket.emit("update-file-list", {err: err, data: files});
+					io.in(roomID).emit("update-file-list", {err: err, data: files});
 				} else {
 					console.log("No files found for room " + roomID);
-					io.in(roomID).emit("update-file-list", {err: err, data: "No files to view"});
+					io.in(roomID).emit("update-file-list", "No files to view");
 				}
 			}
 		}
