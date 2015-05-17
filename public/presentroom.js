@@ -128,9 +128,9 @@ $(document).ready(function() {
 			
 			// cleaning the message text box.
 			$("#chat_box").val("");
+			var myDiv = document.getElementById("chatroom");
+			myDiv.scrollTop = myDiv.scrollHeight;
 		}
-		var myDiv = document.getElementById("chatroom");
-		myDiv.scrollTop = myDiv.scrollHeight;
 	});
 
 	$("#raisehand").on("click", function() {
