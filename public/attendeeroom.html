@@ -86,9 +86,11 @@
 			    color: #D3D3D3;
 			    text-shadow: 1px 1px 1px #444;
 			    border: none;
+			    padding: 10px;
 			    line-height: 15px;
 			    border-radius: 5px;
 			    overflow: auto;
+			    
 			}
 
 			input#chat_box {
@@ -160,6 +162,10 @@
 				color:#FFCC02;
 			}
 
+			#fileList > a{
+				color: #FFCC02;
+			}
+
 		</style>
 
 		<title>Welcome To Your Lecture</title>
@@ -169,11 +175,11 @@
 	<body>
 		<div class = "row">
 			<div class ="col-xs-12 col-md-7" id = "title"></div>
-			<div class ="col-xs-8 col-xs-offset-3 col-md-2 col-md-offset-2" ><input type="image" src= "/img/hand.png" id = "raisehand" class = "btn btn-default"></input><button class = "btn btn-default" id = "leavebutton">LEAVE ROOM</button></div>	
+			<div class ="col-xs-8 col-xs-offset-4 col-md-2 col-md-offset-2" ><input type="image" src= "/img/hand.png" id = "raisehand" class = "btn btn-default"></input><button class = "btn btn-default" id = "leavebutton">LEAVE ROOM</button></div>	
 		</div>
-			<div class="col-xs-12 col-md-6 col-md-offset-1" id ="presentation"></div>
-	<div class="col-xs-12 col-md-3"><div id="fileList"></div></div>
-  			<div class="col-xs-12 col-md-3 "><div id = "attendees"><ul id="attendeeslist"></ul></div>
+			<div class="hidden-xs hidden-sm col-md-2"><div id="fileList"></div></div>
+			<div class="col-xs-12 col-md-7" id ="presentation"></div>
+  			<div class="col-xs-12 col-md-3 "><div id = "attendees"></div>
   				<div id="chatroom"></div>
   				<input type="checkbox" id="anon-check"><p id="checkbox-title"> Send message as anonymous</p><br>
 				<input type="text" name="chat_box" value="" id="chat_box" placeholder="type to chat..." />
