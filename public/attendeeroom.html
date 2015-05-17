@@ -9,6 +9,11 @@
 		<!-- Latest compiled and minified CSS -->
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
 
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+		<script src="/socket.io/socket.io.js"></script>
+		<script type="text/javascript" src="/presentroom.js"></script>
+
 		<style type="text/css">
 
 			div#title{
@@ -185,9 +190,12 @@
 				<input type="text" name="chat_box" value="" id="chat_box" placeholder="type to chat..." />
 			</div>
 
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
-		<script src="/socket.io/socket.io.js"></script>
-		<script type="text/javascript" src="/presentroom.js"></script>
+			<script type="text/javascript">
+				$(".btn").mouseup(function(){
+    			$(this).blur();
+				})
+			</script>
+
+		
 	</body>
 </html>
