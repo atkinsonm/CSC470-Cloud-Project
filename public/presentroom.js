@@ -51,7 +51,7 @@ $(document).ready(function() {
 	});
 	
 	socket.on("update-file-list", function(response) {
-		$("#fileList").empty();
+		$(".fileList").empty();
 
 		if (response.err) {
 			var htmlContentFileString = "";
@@ -59,12 +59,12 @@ $(document).ready(function() {
 				var fileStr = JSON.stringify(response.data[file]);
 				htmlContentFileString = htmlContentFileString + '<a target="_blank" href="' + fileStr.substring(fileStr.indexOf(',')+2, fileStr.length-2) + '">' + fileStr.substring(2, fileStr.indexOf(',')-1) + '</a><br/>';
 			}
-			$("#file-list").text("Error getting latest files");
+			$(".file-list").text("Error getting latest files");
 		}
 		else {
 			for (var file in response.data) {
 				var htmlContentFileString = '<a target="_blank" href="' + response.data[file][1] + '" download>' + response.data[file][0] + '</a><br>';
-				$("#fileList").append(htmlContentFileString);
+				$(".fileList").append(htmlContentFileString);
 			}
 		}
 	});
