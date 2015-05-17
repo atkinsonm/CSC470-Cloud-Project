@@ -168,6 +168,7 @@ exports.sendEmail = function(sendTo, instructor, roomID, callback, externalIP) {
 // Save a file into s3.
 exports.uploadFileToS3Bucket = function(roomID, file, isMain, callback)
 {
+  debugger;
   var bucketName = 'tcnj-csc470-nodejs-' + roomID;
   var fileName = file['name'] + '.' + file['extension'];
   var file = dataUriToBuffer(file['data']);
@@ -199,6 +200,7 @@ exports.uploadFileToS3Bucket = function(roomID, file, isMain, callback)
     }
 
     if (typeof callback !== 'undefined') {
+      data.roomID = roomID;
       callback(err, data);
     }
   });
@@ -214,7 +216,7 @@ exports.listObjects = function(roomID, callback)
     
     s3.listObjects(params, function(err, data) {
         if (err) console.log(err, err.stack); // an error occurred
-        else  callback(err, data["Contents"]); // successful response
+        else  callback(err, data["Contents"], roomID); // successful response
     });
 }
 
@@ -230,7 +232,7 @@ exports.headObject = function(roomID, key, callback)
     
     s3.headObject(params, function(err, data) {
         if (err) console.log(err, err.stack); // an error occurred
-        else  callback(err, data["Metadata"]); // successful response
+        else  callback(err, data["Metadata"], roomID); // successful response
     });
 }
 

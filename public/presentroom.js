@@ -51,6 +51,7 @@ $(document).ready(function() {
 	});
 	
 	socket.on("update-file-list", function(response) {
+		$("#fileList").empty();
 
 		if (response.err) {
 			var htmlContentFileString = "";
