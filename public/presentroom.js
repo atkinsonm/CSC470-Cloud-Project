@@ -81,10 +81,14 @@ $(document).ready(function() {
 				addMessageChatHistory(data.messages[i].username, data.messages[i].userIsPresenter, data.messages[i].message);
 			};
 		}
+		var myDiv = document.getElementById("chatroom");
+		myDiv.scrollTop = myDiv.scrollHeight;
 	});
 
 	socket.on("chat-receive-message", function (data) {
 		addMessageChatHistory(data.username, data.userIsPresenter, data.message);
+		var myDiv = document.getElementById("chatroom");
+		myDiv.scrollTop = myDiv.scrollHeight;
 	});
 
 	socket.on("complete-file-upload", function (data) {
